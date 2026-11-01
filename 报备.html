@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
+<title>陪玩团 · 报备系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+body{background:#f7f9fc;padding:16px 12px 40px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.container{max-width:500px;width:100%}
+h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
+.subhead{font-size:.82rem;color:#64748b;margin-bottom:18px;border-left:4px solid #3b82f6;padding:8px 12px;background:#eef2ff;border-radius:0 8px 8px 0;line-height:1.5}
+.card{background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.04);padding:20px 18px;margin-bottom:20px;border:1px solid #eef2f6}
+.fr{margin-bottom:16px;display:flex;flex-direction:column}
+.fr label{font-size:.88rem;font-weight:500;color:#334155;margin-bottom:6px}
+.fr label span{color:#ef4444}
+.fr input,.fr select{padding:13px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-size:1rem;background:#f9fafc;outline:none;width:100%;transition:.2s}
+.fr input:focus,.fr select:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.fr select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:16px;cursor:pointer}
+.btn{background:#2563eb;border:none;color:#fff;font-weight:600;font-size:1rem;padding:15px 20px;border-radius:16px;width:100%;cursor:pointer;box-shadow:0 8px 14px -4px rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{background:#1d4ed8;transform:scale(.98)}
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:#eef2f6;padding:4px;border-radius:14px;overflow-x:auto}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;border-radius:10px;font-size:.8rem;font-weight:600;color:#64748b;cursor:pointer;white-space:nowrap}
+.tab.active{background:#fff;color:#1e293b;box-shadow:0 2px 4px rgba(0,0,0,.06)}
+.exp-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.exp-btn{flex:1;background:#10b981;border:none;color:#fff;font-weight:600;font-size:.85rem;padding:11px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 10px -2px rgba(16,185,129,.3);white-space:nowrap}
+.exp-btn:active{background:#059669;transform:scale(.97)}
+.exp-prev{background:#f8fafc;border-radius:14px;padding:14px;border:1px solid #e2e8f0;font-size:.75rem;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;color:#334155;line-height:1.6;display:none;margin-bottom:10px}
+.exp-prev.show{display:block}
+.exp-acts{display:flex;gap:8px;margin-top:8px}
+.mini-btn{padding:8px 14px;border:none;background:#dbeafe;color:#1e40af;border-radius:10px;font-size:.8rem;font-weight:600;cursor:pointer;flex:1}
+.mini-btn:active{background:#bfdbfe}
+.sec-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sec-title h2{font-size:1.15rem;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:6px}
+.badge{background:#e2e8f0;color:#334155;font-size:.78rem;padding:3px 10px;border-radius:30px;font-weight:500}
+.stats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stat-item{background:#fff;border-radius:12px;padding:10px 12px;flex:1 1 auto;border:1px solid #eef2f6;display:flex;flex-direction:column;gap:2px;min-width:65px}
+.stat-item .sl{font-size:.65rem;color:#64748b;font-weight:500}
+.stat-item .sv{font-size:1.05rem;font-weight:700;color:#0f172a}
+.stat-item.g .sv{color:#b45309}
+.stat-item.o .sv{color:#1e40af}
+.stat-item.f .sv{color:#6d28d9}
+.ftabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ftab{padding:7px 13px;border-radius:30px;border:1.5px solid #e2e8f0;background:#fff;font-size:.8rem;font-weight:500;color:#475569;cursor:pointer;display:flex;align-items:center;gap:5px}
+.ftab.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.ftab .cb{background:rgba(0,0,0,.1);padding:2px 7px;border-radius:30px;font-size:.7rem}
+.ftab.active .cb{background:rgba(255,255,255,.25)}
+.rec-list{display:flex;flex-direction:column;gap:10px}
+.rec{background:#fff;border-radius:16px;padding:15px;border:1px solid #eef2f6;border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.rec.type-gift{border-left-color:#f59e0b}
+.rec.type-friend{border-left-color:#8b5cf6}
+.rec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.rec-order{font-weight:700;font-size:.92rem;background:#dbeafe;color:#1e40af;padding:4px 11px;border-radius:30px}
+.rec-badge{font-size:.7rem;padding:4px 9px;border-radius:30px;font-weight:600}
+.bg-gift{background:#fef3c7;color:#b45309}
+.bg-other{background:#dbeafe;color:#1e40af}
+.bg-friend{background:#ede9fe;color:#6d28d9}
+.rec-time{font-size:.66rem;color:#94a3b8;background:#f1f5f9;padding:4px 9px;border-radius:30px}
+.rec-detail{display:flex;flex-wrap:wrap;gap:7px 13px;font-size:.88rem;color:#1e293b}
+.rec-detail .f{display:flex;align-items:baseline;gap:4px}
+.rec-detail .fl{color:#64748b;font-size:.76rem;font-weight:500}
+.rec-detail .fv{font-weight:500;word-break:break-word}
+.amt{color:#059669;font-weight:700}
+.empty{background:#fff;border-radius:18px;padding:30px 16px;text-align:center;color:#94a3b8;font-size:.92rem;border:1px dashed #cbd5e1}
+.clr-btn{background:#fee2e2;border:none;color:#ef4444;font-size:.8rem;padding:7px 12px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:500}
+.clr-btn:active{background:#fecaca}
+.toast{background:#0f172a;color:#fff;padding:12px 22px;border-radius:40px;font-size:.88rem;font-weight:500;box-shadow:0 10px 25px -5px rgba(0,0,0,.2);position:fixed;bottom:28px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) scale(1)}
+.toast.err{background:#b91c1c}
+.helper{font-size:.68rem;color:#64748b;margin-top:2px;padding-left:4px}
+.input-warn{border-color:#f59e0b!important;background:#fffbeb!important;box-shadow:0 0 0 3px rgba(245,158,11,.15)!important}
+.warn-msg{color:#b45309;font-size:.73rem;margin-top:4px;padding-left:4px;display:none;align-items:center;gap:4px;font-weight:500}
+.stat-card{background:#fff;border-radius:16px;padding:14px 16px;border:1px solid #eef2f6;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.02)}
+.sc-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.sc-name{font-weight:600;font-size:.92rem;color:#1e293b;display:flex;align-items:center;gap:5px}
+.sc-amt{color:#059669;font-weight:700;font-size:1rem}
+.sc-detail{display:flex;gap:7px;margin-top:7px;font-size:.73rem;flex-wrap:wrap;align-items:center}
+.tpill{padding:3px 8px;border-radius:30px;font-weight:600}
+.tp-gift{background:#fef3c7;color:#b45309}
+.tp-other{background:#dbeafe;color:#1e40af}
+.tp-friend{background:#ede9fe;color:#6d28d9}
+.sc-meta{margin-left:auto;color:#64748b;font-size:.7rem;font-weight:500}
+.date-ctrl{display:flex;gap:8px;align-items:center;margin-bottom:12px;background:#fff;padding:11px 13px;border-radius:14px;border:1px solid #eef2f6;flex-wrap:wrap}
+.date-ctrl label{font-size:.8rem;color:#475569;font-weight:500}
+.date-ctrl input[type=date]{padding:7px 9px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;outline:none;flex:1;min-width:120px;background:#f9fafc}
+.date-ctrl input[type=date]:focus{border-color:#3b82f6}
+.total-card{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-radius:16px;padding:15px 17px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.total-card .tl{font-size:.78rem;opacity:.9}
+.total-card .tv{font-size:1.4rem;font-weight:700}
+.footer{font-size:.68rem;color:#94a3b8;text-align:center;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎮 陪玩报备</h1>
+<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>⚠️ 自动检测单号重复 · 自动记录时间 · 一键导出文字</div>
+
+<div class="card">
+<div class="fr"><label>老板 <span>*</span></label><input id="boss" placeholder="老板昵称"></div>
+<div class="fr"><label>直属</label><input id="direct" placeholder="直属（选填）"></div>
+<div class="fr"><label>陪玩 <span>*</span></label><input id="player" placeholder="陪玩名字"></div>
+<div class="fr"><label>类型 <span>*</span></label><select id="rtype"><option value="其他单">📋 其他单（除礼物/好友位外）</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
+<div class="fr"><label>金额 <span>*</span></label><input id="amount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
+<div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="helper">格式：日期+接待名字+今天第几单</div><div class="warn-msg" id="orderWarn"><span>⚠️</span> 该单号已存在，请检查是否重复！</div></div>
+<button class="btn" id="submitBtn">📋 提交报备</button>
+</div>
+
+<div class="tabs" id="viewTabs">
+<button class="tab active" data-view="records">📋 报备记录</button>
+<button class="tab" data-view="player">🎮 按陪玩</button>
+<button class="tab" data-view="boss">💰 按老板</button>
+<button class="tab" data-view="direct">👔 按直属</button>
+</div>
+
+<div class="exp-row">
+<button class="exp-btn" id="expAll">📄 导出全部记录</button>
+<button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日记录</button>
+</div>
+<div class="exp-prev" id="expPrev"></div>
+<div class="exp-acts" id="expActs" style="display:none">
+<button class="mini-btn" id="copyExp">📋 复制到剪贴板</button>
+<button class="mini-btn" id="closeExp" style="background:#f1f5f9;color:#475569">关闭</button>
+</div>
+
+<div id="viewRecords">
+<div class="stats-bar">
+<div class="stat-item g"><span class="sl">🎁 礼物单</span><span class="sv" id="sGift">0</span></div>
+<div class="stat-item o"><span class="sl">📋 其他单</span><span class="sv" id="sOther">0</span></div>
+<div class="stat-item f"><span class="sl">🤝 好友位</span><span class="sv" id="sFriend">0</span></div>
+</div>
+<div class="ftabs" id="filterTabs">
+<button class="ftab active" data-filter="all">全部 <span class="cb" id="cAll">0</span></button>
+<button class="ftab" data-filter="礼物单">🎁 礼物 <span class="cb" id="cGift">0</span></button>
+<button class="ftab" data-filter="其他单">📋 其他 <span class="cb" id="cOther">0</span></button>
+<button class="ftab" data-filter="好友位">🤝 好友位 <span class="cb" id="cFriend">0</span></button>
+</div>
+<div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2><button class="clr-btn" id="clearAll">🗑️ 清空</button></div>
+<div id="recList" class="rec-list"><div class="empty" id="emptyState">✨ 暂无报备记录，填写上方表单提交</div></div>
+</div>
+
+<div id="viewPlayer" style="display:none"><div class="sec-title"><h2>🎮 陪玩接单归类</h2></div><div id="playerStats"></div></div>
+
+<div id="viewBoss" style="display:none">
+<div class="sec-title"><h2>💰 老板消费归类</h2></div>
+<div class="date-ctrl"><label>日期</label><input type="date" id="bossDate"><button class="mini-btn" id="todayBtn" style="flex:0">今天</button></div>
+<div class="total-card"><span class="tl">当日总消费</span><span class="tv" id="bossTotal">¥0.00</span></div>
+<div id="bossStats"></div>
+</div>
+
+<div id="viewDirect" style="display:none"><div class="sec-title"><h2>👔 直属业绩归类</h2></div><div id="directStats"></div></div>
+
+<div class="footer">数据保存在浏览器本地 · 全维度归类 · 支持一键导出</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+const SK='peiwan_report_v6';
+const $=id=>document.getElementById(id);
+const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast');
+let records=[],curFilter='all',curExport='';
+
+function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2200)}
+function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function nowTime(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')}
+function fullTs(){const n=new Date(),y=n.getFullYear(),mo=String(n.getMonth()+1).padStart(2,'0'),d=String(n.getDate()).padStart(2,'0'),h=String(n.getHours()).padStart(2,'0'),mi=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');return{dt:h+':'+mi+':'+s,full:y+'-'+mo+'-'+d+' '+h+':'+mi+':'+s,date:y+'-'+mo+'-'+d}}
+function genId(){return Date.now()+'-'+Math.random().toString(36).slice(2,8)}
+function fmtM(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function checkDup(no){if(!no||!no.trim())return false;return records.some(r=>r.orderNo&&r.orderNo.trim()===no.trim())}
+function validateOrder(){const no=orderIn.value.trim();if(!no){orderIn.classList.remove('input-warn');orderWarn.style.display='none';return}if(checkDup(no)){orderIn.classList.add('input-warn');orderWarn.style.display='flex'}else{orderIn.classList.remove('input-warn');orderWarn.style.display='none'}}
+
+function load(){
+try{const raw=localStorage.getItem(SK);if(raw){records=JSON.parse(raw)||[];records=records.map(r=>{if(!r.dt)r.dt=nowTime();if(!r.full)r.full='';if(!r.date)r.date=r.full?r.full.split(' ')[0]:todayStr();if(!r.rtype){r.rtype=r.type&&r.type.includes('礼物')?'礼物单':r.type&&r.type.includes('好友')?'好友位':'其他单'}if(!r.amount)r.amount='0.00';return r})}else records=[]}catch(e){records=[]}
+renderAll()}
+function save(){try{localStorage.setItem(SK,JSON.stringify(records))}catch(e){showToast('存储空间不足',true)}}
+
+function getCounts(list){let g=0,o=0,f=0,amt=0;list.forEach(r=>{const a=parseFloat(r.amount)||0;amt+=a;if(r.rtype==='礼物单')g++;else if(r.rtype==='好友位')f++;else o++});return{g,o,f,total:list.length,amount:amt}}
+
+function renderRecords(){
+const c=getCounts(records);
+$('sGift').textContent=c.g;$('sOther').textContent=c.o;$('sFriend').textContent=c.f;
+$('cAll').textContent=c.total;$('cGift').textContent=c.g;$('cOther').textContent=c.o;$('cFriend').textContent=c.f;
+$('recCount').textContent=c.total;
+const filtered=curFilter==='all'?[...records]:records.filter(r=>r.rtype===curFilter);
+const sorted=filtered.reverse();
+if(!sorted.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录，填写上方表单提交':'✨ 当前筛选「'+curFilter+'」下暂无记录')+'</div>';return}
+let h='';
+sorted.forEach(r=>{
+const cls=r.rtype==='礼物单'?'type-gift':r.rtype==='好友位'?'type-friend':'';
+const badge=r.rtype==='礼物单'?'bg-gift':r.rtype==='好友位'?'bg-friend':'bg-other';
+const bText=r.rtype==='礼物单'?'🎁 礼物单':r.rtype==='好友位'?'🤝 好友位':'📋 其他单';
+h+='<div class="rec '+cls+'"><div class="rec-header"><span class="rec-order">'+esc(r.orderNo||'（无单号）')+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">'+(r.full?'📅 '+r.full:'⏰ '+r.dt)+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss||'—')+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player||'—')+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
+});
+$('recList').innerHTML=h}
+
+function renderPlayer(){
+if(!records.length){$('playerStats').innerHTML='<div class="empty">暂无陪玩数据</div>';return}
+const m=new Map();records.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
+const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
+let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">🎮 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
+$('playerStats').innerHTML=h}
+
+function renderBoss(){
+const d=$('bossDate').value||todayStr();
+const f=records.filter(r=>r.date===d);
+const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+$('bossTotal').textContent=fmtM(total);
+if(!f.length){$('bossStats').innerHTML='<div class="empty">📅 '+d+' 暂无记录</div>';return}
+const m=new Map();f.forEach(r=>{const k=(r.boss||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
+const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
+let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👤 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
+$('bossStats').innerHTML=h}
+
+function renderDirect(){
+if(!records.length){$('directStats').innerHTML='<div class="empty">暂无直属数据</div>';return}
+const m=new Map();records.forEach(r=>{const k=(r.direct||'').trim()||'无直属';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
+const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
+let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👔 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
+$('directStats').innerHTML=h}
+
+function renderAll(){renderRecords();renderPlayer();renderBoss();renderDirect()}
+
+// ---------- 导出 ----------
+function buildExport(list,title){
+if(!list.length)return '📭 没有记录可导出';
+const c=getCounts(list);
+let txt=title+'\n'+'='.repeat(42)+'\n';
+txt+='📊 总计：'+c.total+' 单  |  💰 总额：'+fmtM(c.amount)+'\n';
+txt+='🎁 礼物单：'+c.g+'  |  📋 其他单：'+c.o+'  |  🤝 好友位：'+c.f+'\n';
+txt+='='.repeat(42)+'\n\n';
+// 按类型分组
+const groups={gift:[],other:[],friend:[]};
+list.forEach(r=>{if(r.rtype==='礼物单')groups.gift.push(r);else if(r.rtype==='好友位')groups.friend.push(r);else groups.other.push(r)});
+const sections=[
+{title:'🎁 礼物单',items:groups.gift},
+{title:'📋 其他单',items:groups.other},
+{title:'🤝 好友位',items:groups.friend}
+];
+sections.forEach(sec=>{
+if(!sec.items.length)return;
+const sc=getCounts(sec.items);
+txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n';
+txt+='-'.repeat(42)+'\n';
+// 按陪玩分组展示
+const byPlayer=new Map();
+sec.items.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!byPlayer.has(k))byPlayer.set(k,[]);byPlayer.get(k).push(r)});
+byPlayer.forEach((items,name)=>{
+const pc=getCounts(items);
+txt+='  陪玩：'+name+'（'+pc.total+'单 '+fmtM(pc.amount)+'）\n';
+items.sort((a,b)=>a.full.localeCompare(b.full));
+items.forEach(r=>{
+txt+='    单号：'+r.orderNo+'\n';
+txt+='    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n';
+txt+='    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.full||r.dt)+'\n';
+txt+='    '+'-'.repeat(35)+'\n'
+});
+txt+='\n'});
+});
+return txt.trim()}
+
+function showExport(text){
+curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
+
+$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
+$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.date===d);if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
+$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
+$('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
+
+// ---------- 提交 ----------
+$('submitBtn').onclick=()=>{
+const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
+if(!boss){showToast('请填写老板',true);bossIn.focus();return}
+if(!player){showToast('请填写陪玩',true);playerIn.focus();return}
+if(!amountRaw){showToast('请填写金额',true);amountIn.focus();return}
+const amt=parseFloat(amountRaw);if(isNaN(amt)||amt<0){showToast('金额必须≥0',true);amountIn.focus();return}
+if(!orderNo){showToast('请填写单号',true);orderIn.focus();return}
+if(checkDup(orderNo)){if(!confirm('⚠️ 该单号已存在，确定再次提交？\n（'+orderNo+'）')){orderIn.focus();return}}
+const t=fullTs();
+records.push({id:genId(),boss,direct:direct||'',player,rtype,amount:amt.toFixed(2),orderNo,dt:t.dt,full:t.full,date:t.date});
+save();renderAll();
+bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='其他单';amountIn.value='';orderIn.value='';
+orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
+showToast('✅ 报备已提交 · '+rtype+' · '+t.dt)};
+
+$('clearAll').onclick=()=>{if(!records.length){showToast('暂无记录',false);return}if(confirm('确定清空所有报备记录？不可恢复。')){records=[];save();renderAll();showToast('🗑️ 已清空')}};
+
+// ---------- 视图切换 ----------
+$('viewTabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;
+const v=t.dataset.view;
+document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+$('viewRecords').style.display=v==='records'?'block':'none';
+$('viewPlayer').style.display=v==='player'?'block':'none';
+$('viewBoss').style.display=v==='boss'?'block':'none';
+$('viewDirect').style.display=v==='direct'?'block':'none';
+if(v==='boss')renderBoss()};
+
+$('filterTabs').onclick=e=>{const t=e.target.closest('.ftab');if(!t)return;curFilter=t.dataset.filter;
+document.querySelectorAll('.ftab').forEach(x=>x.classList.toggle('active',x.dataset.filter===curFilter));
+renderRecords()};
+
+// ---------- 初始化 ----------
+$('bossDate').value=todayStr();
+$('bossDate').onchange=renderBoss;
+$('todayBtn').onclick=()=>{$('bossDate').value=todayStr();renderBoss()};
+orderIn.addEventListener('input',validateOrder);
+orderIn.addEventListener('blur',validateOrder);
+load();
+})();
+</script>
+</body>
+</html>
