@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
 <title>陪玩团 · 共享报备系统</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
 body{background:#f7f9fc;padding:16px 12px 40px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
 .container{max-width:500px;width:100%}
-h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 .subhead{font-size:.82rem;color:#64748b;margin-bottom:18px;border-left:4px solid #3b82f6;padding:8px 12px;background:#eef2ff;border-radius:0 8px 8px 0;line-height:1.5}
 .card{background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.04);padding:20px 18px;margin-bottom:20px;border:1px solid #eef2f6}
 .fr{margin-bottom:16px;display:flex;flex-direction:column}
@@ -17,20 +18,19 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 .fr input,.fr select{padding:13px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-size:1rem;background:#f9fafc;outline:none;width:100%;transition:.2s}
 .fr input:focus,.fr select:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
 .fr select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:16px;cursor:pointer}
-.btn{background:#2563eb;border:none;color:#fff;font-weight:600;font-size:1rem;padding:15px 20px;border-radius:16px;width:100%;cursor:pointer;box-shadow:0 8px 14px -4px rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn{background:#2563eb;border:none;color:#fff;font-weight:600;font-size:1rem;padding:15px 20px;border-radius:16px;width:100%;cursor:pointer;box-shadow:0 8px 14px -4px rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
 .btn:active{background:#1d4ed8;transform:scale(.98)}
-.btn:disabled{background:#94a3b8;cursor:not-allowed;transform:none;box-shadow:none}
+.btn:disabled{background:#93c5fd;cursor:not-allowed}
 .tabs{display:flex;gap:4px;margin-bottom:14px;background:#eef2f6;padding:4px;border-radius:14px;overflow-x:auto}
 .tab{flex:1;padding:9px 4px;border:none;background:transparent;border-radius:10px;font-size:.8rem;font-weight:600;color:#64748b;cursor:pointer;white-space:nowrap}
 .tab.active{background:#fff;color:#1e293b;box-shadow:0 2px 4px rgba(0,0,0,.06)}
-.exp-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.exp-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .exp-btn{flex:1;background:#10b981;border:none;color:#fff;font-weight:600;font-size:.85rem;padding:11px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 10px -2px rgba(16,185,129,.3);white-space:nowrap}
 .exp-btn:active{background:#059669;transform:scale(.97)}
 .exp-prev{background:#f8fafc;border-radius:14px;padding:14px;border:1px solid #e2e8f0;font-size:.75rem;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;color:#334155;line-height:1.6;display:none;margin-bottom:10px}
 .exp-prev.show{display:block}
 .exp-acts{display:flex;gap:8px;margin-top:8px}
 .mini-btn{padding:8px 14px;border:none;background:#dbeafe;color:#1e40af;border-radius:10px;font-size:.8rem;font-weight:600;cursor:pointer;flex:1}
-.mini-btn:active{background:#bfdbfe}
 .sec-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .sec-title h2{font-size:1.15rem;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:6px}
 .badge{background:#e2e8f0;color:#334155;font-size:.78rem;padding:3px 10px;border-radius:30px;font-weight:500}
@@ -47,7 +47,8 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 .ftab .cb{background:rgba(0,0,0,.1);padding:2px 7px;border-radius:30px;font-size:.7rem}
 .ftab.active .cb{background:rgba(255,255,255,.25)}
 .rec-list{display:flex;flex-direction:column;gap:10px}
-.rec{background:#fff;border-radius:16px;padding:15px;border:1px solid #eef2f6;border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.rec{background:#fff;border-radius:16px;padding:15px;border:1px solid #eef2f6;border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,.02);cursor:pointer;transition:0.2s;position:relative}
+.rec:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.05)}
 .rec.type-gift{border-left-color:#f59e0b}
 .rec.type-friend{border-left-color:#8b5cf6}
 .rec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
@@ -63,8 +64,28 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 .rec-detail .fv{font-weight:500;word-break:break-word}
 .amt{color:#059669;font-weight:700}
 .empty{background:#fff;border-radius:18px;padding:30px 16px;text-align:center;color:#94a3b8;font-size:.92rem;border:1px dashed #cbd5e1}
-.clr-btn{background:#fee2e2;border:none;color:#ef4444;font-size:.8rem;padding:7px 12px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:500}
-.clr-btn:active{background:#fecaca}
+
+/* 弹窗通用样式 */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal.show{display:flex}
+.modal-content{background:#fff;width:100%;max-width:400px;border-radius:20px;padding:20px;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:pop .3s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
+@keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:15px}
+.modal-title{font-weight:700;font-size:1.1rem;color:#1e293b}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#94a3b8}
+.modal-body .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #f1f5f9;font-size:.95rem}
+.modal-body .row:last-child{border-bottom:none}
+.modal-body .r-label{color:#64748b}
+.modal-body .r-val{font-weight:600;color:#1e293b;text-align:right;word-break:break-all;max-width:60%}
+.modal-footer{margin-top:20px;display:flex;gap:10px}
+.btn-danger{background:#fee2e2;color:#ef4444;border:none;padding:12px;border-radius:12px;font-weight:600;cursor:pointer;flex:1;transition:.2s}
+.btn-danger:active{background:#fecaca}
+.btn-cancel{background:#f1f5f9;color:#475569;border:none;padding:12px;border-radius:12px;font-weight:600;cursor:pointer;flex:1;transition:.2s}
+
+/* 密码输入框样式 */
+.pwd-input{width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:1rem;outline:none;margin-top:10px;margin-bottom:10px;text-align:center;letter-spacing:2px}
+.pwd-input:focus{border-color:#3b82f6}
+
 .toast{background:#0f172a;color:#fff;padding:12px 22px;border-radius:40px;font-size:.88rem;font-weight:500;box-shadow:0 10px 25px -5px rgba(0,0,0,.2);position:fixed;bottom:28px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) scale(1)}
 .toast.err{background:#b91c1c}
@@ -84,18 +105,19 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 .date-ctrl{display:flex;gap:8px;align-items:center;margin-bottom:12px;background:#fff;padding:11px 13px;border-radius:14px;border:1px solid #eef2f6;flex-wrap:wrap}
 .date-ctrl label{font-size:.8rem;color:#475569;font-weight:500}
 .date-ctrl input[type=date]{padding:7px 9px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;outline:none;flex:1;min-width:120px;background:#f9fafc}
-.date-ctrl input[type=date]:focus{border-color:#3b82f6}
 .total-card{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-radius:16px;padding:15px 17px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .total-card .tl{font-size:.78rem;opacity:.9}
 .total-card .tv{font-size:1.4rem;font-weight:700}
 .footer{font-size:.68rem;color:#94a3b8;text-align:center;margin-top:20px}
-.loading{text-align:center;padding:20px;color:#64748b;font-size:.9rem;display:none}
+.loading-tip{text-align:center;padding:20px;color:#64748b;font-size:.9rem}
+.clr-btn{background:#fee2e2;border:none;color:#ef4444;font-size:.8rem;padding:7px 12px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:500}
+.clr-btn:active{background:#fecaca}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>🎮 陪玩报备系统</h1>
-<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>⚠️ 全网共享数据 · 自动检测单号重复 · 一键导出</div>
+<h1>🎮 共享报备系统</h1>
+<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>☁️ 云端同步 · 点击卡片看详情 · 删单需密码</div>
 
 <div class="card">
 <div class="fr"><label>老板 <span>*</span></label><input id="boss" placeholder="老板昵称"></div>
@@ -104,7 +126,7 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 <div class="fr"><label>类型 <span>*</span></label><select id="rtype"><option value="其他单">📋 其他单（除礼物/好友位外）</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
 <div class="fr"><label>金额 <span>*</span></label><input id="amount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
 <div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="helper">格式：日期+接待名字+今天第几单</div><div class="warn-msg" id="orderWarn"><span>⚠️</span> 该单号已被报备，请检查是否重复！</div></div>
-<button class="btn" id="submitBtn">📋 提交报备</button>
+<button class="btn" id="submitBtn">📋 提交报备到云端</button>
 </div>
 
 <div class="tabs" id="viewTabs">
@@ -115,8 +137,9 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 </div>
 
 <div class="exp-row">
-<button class="exp-btn" id="expAll">📄 导出全部记录</button>
-<button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日记录</button>
+<button class="exp-btn" id="expAll">📄 导出全部</button>
+<button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日</button>
+<button class="clr-btn" id="clearAll" title="清空所有云端数据">🗑️ 全清</button>
 </div>
 <div class="exp-prev" id="expPrev"></div>
 <div class="exp-acts" id="expActs" style="display:none">
@@ -136,9 +159,8 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 <button class="ftab" data-filter="其他单">📋 其他 <span class="cb" id="cOther">0</span></button>
 <button class="ftab" data-filter="好友位">🤝 好友位 <span class="cb" id="cFriend">0</span></button>
 </div>
-<div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2><button class="clr-btn" id="clearAll">🗑️ 清空</button></div>
-<div id="loading" class="loading">⏳ 正在加载云端数据...</div>
-<div id="recList" class="rec-list"><div class="empty" id="emptyState">✨ 暂无报备记录，填写上方表单提交</div></div>
+<div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2></div>
+<div id="recList" class="rec-list"><div class="loading-tip">数据加载中...</div></div>
 </div>
 
 <div id="viewPlayer" style="display:none"><div class="sec-title"><h2>🎮 陪玩接单归类</h2></div><div id="playerStats"></div></div>
@@ -152,99 +174,103 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:cen
 
 <div id="viewDirect" style="display:none"><div class="sec-title"><h2>👔 直属业绩归类</h2></div><div id="directStats"></div></div>
 
-<div class="footer">数据已接入云端，所有人实时共享 · 刷新不丢失</div>
+<div class="footer">数据已接入云端 · 所有人实时共享 · 刷新不丢失</div>
 </div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="detailModal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title" id="mTitle">报备详情</div>
+<button class="modal-close" id="mClose">✖</button>
+</div>
+<div class="modal-body" id="mBody"></div>
+<div class="modal-footer">
+<button class="btn-danger" id="mDelete">🗑️ 删除此单</button>
+<button class="btn-cancel" id="mCancel">关闭</button>
+</div>
+</div>
+</div>
+
+<!-- 密码验证弹窗 -->
+<div class="modal" id="pwdModal">
+<div class="modal-content" style="text-align:center">
+<div class="modal-header" style="justify-content:center;border:none;padding-bottom:0">
+<div class="modal-title" style="color:#ef4444">🔒 安全验证</div>
+</div>
+<div class="modal-body">
+<p style="font-size:.9rem;color:#64748b;margin-bottom:10px">删除数据需管理员密码</p>
+<input type="password" id="adminPwd" class="pwd-input" placeholder="请输入密码" autocomplete="off">
+</div>
+<div class="modal-footer" style="margin-top:0">
+<button class="btn-danger" id="confirmDeleteBtn">确认删除</button>
+<button class="btn-cancel" id="cancelPwdBtn">取消</button>
+</div>
+</div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
-// ===== 填入你的 Supabase 配置 =====
+(function(){
 const SUPABASE_URL = 'https://jlqfhzcqxxmatncogfkn.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_JX8kwFixnHM_aEogGyWSHw_JH4JGZpw';
-// ===================================
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 🔑 管理员密码设置在这里，你可以随便改
+const ADMIN_PASSWORD = '123456'; 
 
 const $=id=>document.getElementById(id);
 const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast'),submitBtn=$('submitBtn');
-let records=[],curFilter='all',curExport='';
+let records=[],curFilter='all',curExport='',isLoading=false,selectedRecord=null,deleteMode='single';
 
-function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2200)}
+function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2500)}
 function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function nowTime(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')}
 function fullTs(){const n=new Date(),y=n.getFullYear(),mo=String(n.getMonth()+1).padStart(2,'0'),d=String(n.getDate()).padStart(2,'0'),h=String(n.getHours()).padStart(2,'0'),mi=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');return{dt:h+':'+mi+':'+s,full:y+'-'+mo+'-'+d+' '+h+':'+mi+':'+s,date:y+'-'+mo+'-'+d}}
 function fmtM(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
+// 从云端拉取
+async function fetchRecords() {
+    if(isLoading) return;
+    isLoading = true;
+    if(records.length===0) $('recList').innerHTML = '<div class="loading-tip">☁️ 正在同步云端数据...</div>';
+    try {
+        const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: true });
+        if (error) throw error;
+        records = data || [];
+        renderAll();
+    } catch (e) {
+        console.error(e);
+        if(records.length===0) $('recList').innerHTML = '<div class="empty" style="color:#ef4444">❌ 加载失败：'+e.message+'</div>';
+        showToast('数据同步失败', true);
+    } finally {
+        isLoading = false;
+    }
+}
+
 function checkDup(no){if(!no||!no.trim())return false;return records.some(r=>r.order_no&&r.order_no.trim()===no.trim())}
 function validateOrder(){const no=orderIn.value.trim();if(!no){orderIn.classList.remove('input-warn');orderWarn.style.display='none';return}if(checkDup(no)){orderIn.classList.add('input-warn');orderWarn.style.display='flex'}else{orderIn.classList.remove('input-warn');orderWarn.style.display='none'}}
 
-// --- API 交互 ---
-async function fetchRecords(){
-$('loading').style.display='block';
-try{
-const res=await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*&order=created_at.desc`,{
-headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-});
-if(!res.ok) throw new Error('获取数据失败');
-records=await res.json();
-renderAll();
-}catch(e){
-console.error(e);showToast('加载数据失败，请检查网络',true);
-$('recList').innerHTML='<div class="empty" style="color:#ef4444">加载失败，请刷新重试</div>';
-}finally{
-$('loading').style.display='none';
-}}
-
-async function submitData(data){
-submitBtn.disabled=true;submitBtn.textContent='提交中...';
-try{
-const res=await fetch(`${SUPABASE_URL}/rest/v1/reports`,{
-method:'POST',
-headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-body:JSON.stringify(data)
-});
-if(!res.ok){
-const err=await res.json();
-throw new Error(err.message||'提交失败');
-}
-showToast('✅ 报备已提交共享库');
-bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='其他单';amountIn.value='';orderIn.value='';
-orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
-await fetchRecords(); // 提交成功后重新拉取最新数据
-}catch(e){
-console.error(e);showToast('提交失败：'+e.message,true);
-}finally{
-submitBtn.disabled=false;submitBtn.textContent='📋 提交报备';
-}}
-
-async function deleteAll(){
-if(!records.length){showToast('暂无记录',false);return}
-if(!confirm('⚠️ 确定清空云端所有报备记录吗？此操作不可恢复，且对所有人生效！'))return;
-try{
-const res=await fetch(`${SUPABASE_URL}/rest/v1/reports?id=gt.0`,{
-method:'DELETE',
-headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-});
-if(!res.ok) throw new Error('删除失败');
-showToast('🗑️ 已清空云端数据');
-await fetchRecords();
-}catch(e){
-console.error(e);showToast('清空失败',true);
-}}
-
-// --- 渲染逻辑 ---
 function getCounts(list){let g=0,o=0,f=0,amt=0;list.forEach(r=>{const a=parseFloat(r.amount)||0;amt+=a;if(r.rtype==='礼物单')g++;else if(r.rtype==='好友位')f++;else o++});return{g,o,f,total:list.length,amount:amt}}
 
+// 渲染主界面
 function renderRecords(){
 const c=getCounts(records);
 $('sGift').textContent=c.g;$('sOther').textContent=c.o;$('sFriend').textContent=c.f;
 $('cAll').textContent=c.total;$('cGift').textContent=c.g;$('cOther').textContent=c.o;$('cFriend').textContent=c.f;
 $('recCount').textContent=c.total;
-const filtered=curFilter==='all'?records:records.filter(r=>r.rtype===curFilter);
-if(!filtered.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录，填写上方表单提交':'✨ 当前筛选「'+curFilter+'」下暂无记录')+'</div>';return}
+const filtered=curFilter==='all'?[...records]:records.filter(r=>r.rtype===curFilter);
+const sorted=filtered.reverse();
+if(!sorted.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录':'✨ 当前筛选下暂无记录')+'</div>';return}
 let h='';
-filtered.forEach(r=>{
+sorted.forEach(r=>{
 const cls=r.rtype==='礼物单'?'type-gift':r.rtype==='好友位'?'type-friend':'';
 const badge=r.rtype==='礼物单'?'bg-gift':r.rtype==='好友位'?'bg-friend':'bg-other';
 const bText=r.rtype==='礼物单'?'🎁 礼物单':r.rtype==='好友位'?'🤝 好友位':'📋 其他单';
-h+='<div class="rec '+cls+'"><div class="rec-header"><span class="rec-order">'+esc(r.order_no)+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">📅 '+(r.report_time||'')+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss)+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player)+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
+const timeStr = r.report_time || r.dt || '';
+h+='<div class="rec '+cls+'" onclick="openModal('+r.id+')"><div class="rec-header"><span class="rec-order">'+esc(r.order_no||'无单号')+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">📅 '+timeStr+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss||'—')+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player||'—')+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
 });
 $('recList').innerHTML=h}
 
@@ -257,7 +283,7 @@ $('playerStats').innerHTML=h}
 
 function renderBoss(){
 const d=$('bossDate').value||todayStr();
-const f=records.filter(r=>r.record_date===d);
+const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));
 const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
 $('bossTotal').textContent=fmtM(total);
 if(!f.length){$('bossStats').innerHTML='<div class="empty">📅 '+d+' 暂无记录</div>';return}
@@ -275,7 +301,100 @@ $('directStats').innerHTML=h}
 
 function renderAll(){renderRecords();renderPlayer();renderBoss();renderDirect()}
 
-// --- 导出 ---
+// ---------- 弹窗逻辑 ----------
+window.openModal = function(id) {
+    selectedRecord = records.find(r => r.id === id);
+    if(!selectedRecord) return;
+    const r = selectedRecord;
+    
+    document.getElementById('mTitle').textContent = '单号：' + (r.order_no || '无');
+    
+    let html = '';
+    html += '<div class="row"><span class="r-label">报备类型</span><span class="r-val">'+ (r.rtype||'其他单') +'</span></div>';
+    html += '<div class="row"><span class="r-label">老板</span><span class="r-val">'+ esc(r.boss||'—') +'</span></div>';
+    html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(r.direct||'—') +'</span></div>';
+    html += '<div class="row"><span class="r-label">陪玩</span><span class="r-val">'+ esc(r.player||'—') +'</span></div>';
+    html += '<div class="row"><span class="r-label">金额</span><span class="r-val" style="color:#059669;font-size:1.1rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">报备时间</span><span class="r-val">'+ (r.report_time||r.dt||'') +'</span></div>';
+    
+    document.getElementById('mBody').innerHTML = html;
+    document.getElementById('detailModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('detailModal').classList.remove('show');
+    selectedRecord = null;
+}
+
+document.getElementById('mClose').onclick = closeModal;
+document.getElementById('mCancel').onclick = closeModal;
+
+// ---------- 删除验证逻辑 ----------
+// 1. 详情弹窗点击删除
+document.getElementById('mDelete').onclick = () => {
+    if(!selectedRecord) return;
+    deleteMode = 'single';
+    document.getElementById('adminPwd').value = ''; // 清空密码框
+    document.getElementById('pwdModal').classList.add('show');
+    setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
+};
+
+// 2. 右上角点击全清
+$('clearAll').onclick = () => {
+    if(!records.length){showToast('暂无记录',false);return}
+    deleteMode = 'all';
+    document.getElementById('adminPwd').value = ''; 
+    document.getElementById('pwdModal').classList.add('show');
+    setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
+};
+
+// 3. 取消密码验证
+document.getElementById('cancelPwdBtn').onclick = () => {
+    document.getElementById('pwdModal').classList.remove('show');
+};
+
+// 4. 确认密码并执行删除
+document.getElementById('confirmDeleteBtn').onclick = async () => {
+    const pwd = document.getElementById('adminPwd').value;
+    if(pwd !== ADMIN_PASSWORD) {
+        showToast('❌ 密码错误，无权限删除！', true);
+        document.getElementById('adminPwd').value = '';
+        document.getElementById('adminPwd').focus();
+        return;
+    }
+
+    // 密码正确，执行删除
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true; btn.textContent = '处理中...';
+
+    try {
+        if(deleteMode === 'single') {
+            const { error } = await supabase.from('reports').delete().eq('id', selectedRecord.id);
+            if (error) throw error;
+            showToast('✅ 单条记录已删除');
+            closeModal();
+        } else if(deleteMode === 'all') {
+            const { error } = await supabase.from('reports').delete().gt('id', 0);
+            if(error) throw error;
+            showToast('🗑️ 云端数据已全部清空');
+        }
+        
+        document.getElementById('pwdModal').classList.remove('show');
+        fetchRecords();
+    } catch (e) {
+        console.error(e);
+        showToast('删除失败：'+e.message, true);
+    } finally {
+        btn.disabled = false; btn.textContent = '确认删除';
+    }
+};
+
+// 支持在密码框回车直接提交
+document.getElementById('adminPwd').addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') document.getElementById('confirmDeleteBtn').click();
+});
+
+// ---------- 导出 ----------
 function buildExport(list,title){
 if(!list.length)return '📭 没有记录可导出';
 const c=getCounts(list);
@@ -289,35 +408,61 @@ const sections=[{title:'🎁 礼物单',items:groups.gift},{title:'📋 其他�
 sections.forEach(sec=>{
 if(!sec.items.length)return;
 const sc=getCounts(sec.items);
-txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n'+'-'.repeat(42)+'\n';
+txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n';
+txt+='-'.repeat(42)+'\n';
 const byPlayer=new Map();
 sec.items.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!byPlayer.has(k))byPlayer.set(k,[]);byPlayer.get(k).push(r)});
 byPlayer.forEach((items,name)=>{
 const pc=getCounts(items);
 txt+='  陪玩：'+name+'（'+pc.total+'单 '+fmtM(pc.amount)+'）\n';
 items.sort((a,b)=>(a.report_time||'').localeCompare(b.report_time||''));
-items.forEach(r=>{txt+='    单号：'+r.order_no+'\n    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.report_time||'')+'\n    '+'-'.repeat(35)+'\n'});
+items.forEach(r=>{
+txt+='    单号：'+r.order_no+'\n';
+txt+='    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n';
+txt+='    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.report_time||r.dt||'')+'\n';
+txt+='    '+'-'.repeat(35)+'\n'
+});
 txt+='\n'});
 });
 return txt.trim()}
 
 function showExport(text){curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
+$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
+$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
+$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
+$('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
 
-// --- 事件绑定 ---
-$('submitBtn').onclick=()=>{
+// ---------- 提交到云端 ----------
+submitBtn.onclick=async()=>{
 const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
 if(!boss){showToast('请填写老板',true);bossIn.focus();return}
 if(!player){showToast('请填写陪玩',true);playerIn.focus();return}
 if(!amountRaw){showToast('请填写金额',true);amountIn.focus();return}
 const amt=parseFloat(amountRaw);if(isNaN(amt)||amt<0){showToast('金额必须≥0',true);amountIn.focus();return}
 if(!orderNo){showToast('请填写单号',true);orderIn.focus();return}
-if(checkDup(orderNo)){if(!confirm('⚠️ 该单号已存在，确定再次提交？\n（'+orderNo+'）')){orderIn.focus();return}}
+if(checkDup(orderNo)){if(!confirm('⚠️ 该单号已在云端存在，确定再次提交？\n（'+orderNo+'）')){orderIn.focus();return}}
 const t=fullTs();
-submitData({boss,direct:direct||'',player,rtype,amount:amt.toFixed(2),order_no:orderNo,report_time:t.full,record_date:t.date});
+submitBtn.disabled = true; submitBtn.textContent = '☁️ 正在提交...';
+
+try {
+    const { error } = await supabase.from('reports').insert([{
+        boss: boss, direct: direct || '', player: player, rtype: rtype, amount: amt, order_no: orderNo, report_time: t.full, record_date: t.date
+    }]);
+    if (error) throw error;
+    
+    bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='其他单';amountIn.value='';orderIn.value='';
+    orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
+    showToast('✅ 已同步到云端');
+    await fetchRecords();
+} catch (e) {
+    console.error(e);
+    showToast('提交失败：'+e.message, true);
+} finally {
+    submitBtn.disabled = false; submitBtn.textContent = '📋 提交报备到云端';
+}
 };
 
-$('clearAll').onclick=deleteAll;
-
+// ---------- 视图切换 ----------
 $('viewTabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;
 const v=t.dataset.view;
 document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
@@ -331,19 +476,15 @@ $('filterTabs').onclick=e=>{const t=e.target.closest('.ftab');if(!t)return;curFi
 document.querySelectorAll('.ftab').forEach(x=>x.classList.toggle('active',x.dataset.filter===curFilter));
 renderRecords()};
 
+// ---------- 初始化 ----------
 $('bossDate').value=todayStr();
 $('bossDate').onchange=renderBoss;
 $('todayBtn').onclick=()=>{$('bossDate').value=todayStr();renderBoss()};
 orderIn.addEventListener('input',validateOrder);
 orderIn.addEventListener('blur',validateOrder);
-
-$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
-$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d);if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
-$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
-$('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
-
-// 初始化
 fetchRecords();
+
+})();
 </script>
 </body>
 </html>
