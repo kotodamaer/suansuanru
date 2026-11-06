@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
-<title>陪玩团 · 报备系统</title>
+<title>陪玩团 · 共享报备系统</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
 body{background:#f7f9fc;padding:16px 12px 40px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
 .container{max-width:500px;width:100%}
-h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
+h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:6px}
 .subhead{font-size:.82rem;color:#64748b;margin-bottom:18px;border-left:4px solid #3b82f6;padding:8px 12px;background:#eef2ff;border-radius:0 8px 8px 0;line-height:1.5}
 .card{background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.04);padding:20px 18px;margin-bottom:20px;border:1px solid #eef2f6}
 .fr{margin-bottom:16px;display:flex;flex-direction:column}
@@ -19,6 +19,7 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 .fr select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:16px;cursor:pointer}
 .btn{background:#2563eb;border:none;color:#fff;font-weight:600;font-size:1rem;padding:15px 20px;border-radius:16px;width:100%;cursor:pointer;box-shadow:0 8px 14px -4px rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{background:#1d4ed8;transform:scale(.98)}
+.btn:disabled{background:#94a3b8;cursor:not-allowed;transform:none;box-shadow:none}
 .tabs{display:flex;gap:4px;margin-bottom:14px;background:#eef2f6;padding:4px;border-radius:14px;overflow-x:auto}
 .tab{flex:1;padding:9px 4px;border:none;background:transparent;border-radius:10px;font-size:.8rem;font-weight:600;color:#64748b;cursor:pointer;white-space:nowrap}
 .tab.active{background:#fff;color:#1e293b;box-shadow:0 2px 4px rgba(0,0,0,.06)}
@@ -88,12 +89,13 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 .total-card .tl{font-size:.78rem;opacity:.9}
 .total-card .tv{font-size:1.4rem;font-weight:700}
 .footer{font-size:.68rem;color:#94a3b8;text-align:center;margin-top:20px}
+.loading{text-align:center;padding:20px;color:#64748b;font-size:.9rem;display:none}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>🎮 陪玩报备</h1>
-<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>⚠️ 自动检测单号重复 · 自动记录时间 · 一键导出文字</div>
+<h1>🎮 陪玩报备系统</h1>
+<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>⚠️ 全网共享数据 · 自动检测单号重复 · 一键导出</div>
 
 <div class="card">
 <div class="fr"><label>老板 <span>*</span></label><input id="boss" placeholder="老板昵称"></div>
@@ -101,7 +103,7 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 <div class="fr"><label>陪玩 <span>*</span></label><input id="player" placeholder="陪玩名字"></div>
 <div class="fr"><label>类型 <span>*</span></label><select id="rtype"><option value="其他单">📋 其他单（除礼物/好友位外）</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
 <div class="fr"><label>金额 <span>*</span></label><input id="amount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
-<div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="helper">格式：日期+接待名字+今天第几单</div><div class="warn-msg" id="orderWarn"><span>⚠️</span> 该单号已存在，请检查是否重复！</div></div>
+<div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="helper">格式：日期+接待名字+今天第几单</div><div class="warn-msg" id="orderWarn"><span>⚠️</span> 该单号已被报备，请检查是否重复！</div></div>
 <button class="btn" id="submitBtn">📋 提交报备</button>
 </div>
 
@@ -135,6 +137,7 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 <button class="ftab" data-filter="好友位">🤝 好友位 <span class="cb" id="cFriend">0</span></button>
 </div>
 <div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2><button class="clr-btn" id="clearAll">🗑️ 清空</button></div>
+<div id="loading" class="loading">⏳ 正在加载云端数据...</div>
 <div id="recList" class="rec-list"><div class="empty" id="emptyState">✨ 暂无报备记录，填写上方表单提交</div></div>
 </div>
 
@@ -149,33 +152,84 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 
 <div id="viewDirect" style="display:none"><div class="sec-title"><h2>👔 直属业绩归类</h2></div><div id="directStats"></div></div>
 
-<div class="footer">数据保存在浏览器本地 · 全维度归类 · 支持一键导出</div>
+<div class="footer">数据已接入云端，所有人实时共享 · 刷新不丢失</div>
 </div>
 <div id="toast" class="toast"></div>
 
 <script>
-(function(){
-const SK='peiwan_report_v6';
+// ===== 填入你的 Supabase 配置 =====
+const SUPABASE_URL = 'https://jlqfhzcqxxmatncogfkn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_JX8kwFixnHM_aEogGyWSHw_JH4JGZpw';
+// ===================================
+
 const $=id=>document.getElementById(id);
-const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast');
+const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast'),submitBtn=$('submitBtn');
 let records=[],curFilter='all',curExport='';
 
 function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2200)}
 function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
-function nowTime(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')}
 function fullTs(){const n=new Date(),y=n.getFullYear(),mo=String(n.getMonth()+1).padStart(2,'0'),d=String(n.getDate()).padStart(2,'0'),h=String(n.getHours()).padStart(2,'0'),mi=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');return{dt:h+':'+mi+':'+s,full:y+'-'+mo+'-'+d+' '+h+':'+mi+':'+s,date:y+'-'+mo+'-'+d}}
-function genId(){return Date.now()+'-'+Math.random().toString(36).slice(2,8)}
 function fmtM(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
-function checkDup(no){if(!no||!no.trim())return false;return records.some(r=>r.orderNo&&r.orderNo.trim()===no.trim())}
+function checkDup(no){if(!no||!no.trim())return false;return records.some(r=>r.order_no&&r.order_no.trim()===no.trim())}
 function validateOrder(){const no=orderIn.value.trim();if(!no){orderIn.classList.remove('input-warn');orderWarn.style.display='none';return}if(checkDup(no)){orderIn.classList.add('input-warn');orderWarn.style.display='flex'}else{orderIn.classList.remove('input-warn');orderWarn.style.display='none'}}
 
-function load(){
-try{const raw=localStorage.getItem(SK);if(raw){records=JSON.parse(raw)||[];records=records.map(r=>{if(!r.dt)r.dt=nowTime();if(!r.full)r.full='';if(!r.date)r.date=r.full?r.full.split(' ')[0]:todayStr();if(!r.rtype){r.rtype=r.type&&r.type.includes('礼物')?'礼物单':r.type&&r.type.includes('好友')?'好友位':'其他单'}if(!r.amount)r.amount='0.00';return r})}else records=[]}catch(e){records=[]}
-renderAll()}
-function save(){try{localStorage.setItem(SK,JSON.stringify(records))}catch(e){showToast('存储空间不足',true)}}
+// --- API 交互 ---
+async function fetchRecords(){
+$('loading').style.display='block';
+try{
+const res=await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*&order=created_at.desc`,{
+headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+});
+if(!res.ok) throw new Error('获取数据失败');
+records=await res.json();
+renderAll();
+}catch(e){
+console.error(e);showToast('加载数据失败，请检查网络',true);
+$('recList').innerHTML='<div class="empty" style="color:#ef4444">加载失败，请刷新重试</div>';
+}finally{
+$('loading').style.display='none';
+}}
 
+async function submitData(data){
+submitBtn.disabled=true;submitBtn.textContent='提交中...';
+try{
+const res=await fetch(`${SUPABASE_URL}/rest/v1/reports`,{
+method:'POST',
+headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+body:JSON.stringify(data)
+});
+if(!res.ok){
+const err=await res.json();
+throw new Error(err.message||'提交失败');
+}
+showToast('✅ 报备已提交共享库');
+bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='其他单';amountIn.value='';orderIn.value='';
+orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
+await fetchRecords(); // 提交成功后重新拉取最新数据
+}catch(e){
+console.error(e);showToast('提交失败：'+e.message,true);
+}finally{
+submitBtn.disabled=false;submitBtn.textContent='📋 提交报备';
+}}
+
+async function deleteAll(){
+if(!records.length){showToast('暂无记录',false);return}
+if(!confirm('⚠️ 确定清空云端所有报备记录吗？此操作不可恢复，且对所有人生效！'))return;
+try{
+const res=await fetch(`${SUPABASE_URL}/rest/v1/reports?id=gt.0`,{
+method:'DELETE',
+headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+});
+if(!res.ok) throw new Error('删除失败');
+showToast('🗑️ 已清空云端数据');
+await fetchRecords();
+}catch(e){
+console.error(e);showToast('清空失败',true);
+}}
+
+// --- 渲染逻辑 ---
 function getCounts(list){let g=0,o=0,f=0,amt=0;list.forEach(r=>{const a=parseFloat(r.amount)||0;amt+=a;if(r.rtype==='礼物单')g++;else if(r.rtype==='好友位')f++;else o++});return{g,o,f,total:list.length,amount:amt}}
 
 function renderRecords(){
@@ -183,15 +237,14 @@ const c=getCounts(records);
 $('sGift').textContent=c.g;$('sOther').textContent=c.o;$('sFriend').textContent=c.f;
 $('cAll').textContent=c.total;$('cGift').textContent=c.g;$('cOther').textContent=c.o;$('cFriend').textContent=c.f;
 $('recCount').textContent=c.total;
-const filtered=curFilter==='all'?[...records]:records.filter(r=>r.rtype===curFilter);
-const sorted=filtered.reverse();
-if(!sorted.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录，填写上方表单提交':'✨ 当前筛选「'+curFilter+'」下暂无记录')+'</div>';return}
+const filtered=curFilter==='all'?records:records.filter(r=>r.rtype===curFilter);
+if(!filtered.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录，填写上方表单提交':'✨ 当前筛选「'+curFilter+'」下暂无记录')+'</div>';return}
 let h='';
-sorted.forEach(r=>{
+filtered.forEach(r=>{
 const cls=r.rtype==='礼物单'?'type-gift':r.rtype==='好友位'?'type-friend':'';
 const badge=r.rtype==='礼物单'?'bg-gift':r.rtype==='好友位'?'bg-friend':'bg-other';
 const bText=r.rtype==='礼物单'?'🎁 礼物单':r.rtype==='好友位'?'🤝 好友位':'📋 其他单';
-h+='<div class="rec '+cls+'"><div class="rec-header"><span class="rec-order">'+esc(r.orderNo||'（无单号）')+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">'+(r.full?'📅 '+r.full:'⏰ '+r.dt)+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss||'—')+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player||'—')+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
+h+='<div class="rec '+cls+'"><div class="rec-header"><span class="rec-order">'+esc(r.order_no)+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">📅 '+(r.report_time||'')+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss)+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player)+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
 });
 $('recList').innerHTML=h}
 
@@ -204,7 +257,7 @@ $('playerStats').innerHTML=h}
 
 function renderBoss(){
 const d=$('bossDate').value||todayStr();
-const f=records.filter(r=>r.date===d);
+const f=records.filter(r=>r.record_date===d);
 const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
 $('bossTotal').textContent=fmtM(total);
 if(!f.length){$('bossStats').innerHTML='<div class="empty">📅 '+d+' 暂无记录</div>';return}
@@ -222,7 +275,7 @@ $('directStats').innerHTML=h}
 
 function renderAll(){renderRecords();renderPlayer();renderBoss();renderDirect()}
 
-// ---------- 导出 ----------
+// --- 导出 ---
 function buildExport(list,title){
 if(!list.length)return '📭 没有记录可导出';
 const c=getCounts(list);
@@ -230,45 +283,27 @@ let txt=title+'\n'+'='.repeat(42)+'\n';
 txt+='📊 总计：'+c.total+' 单  |  💰 总额：'+fmtM(c.amount)+'\n';
 txt+='🎁 礼物单：'+c.g+'  |  📋 其他单：'+c.o+'  |  🤝 好友位：'+c.f+'\n';
 txt+='='.repeat(42)+'\n\n';
-// 按类型分组
 const groups={gift:[],other:[],friend:[]};
 list.forEach(r=>{if(r.rtype==='礼物单')groups.gift.push(r);else if(r.rtype==='好友位')groups.friend.push(r);else groups.other.push(r)});
-const sections=[
-{title:'🎁 礼物单',items:groups.gift},
-{title:'📋 其他单',items:groups.other},
-{title:'🤝 好友位',items:groups.friend}
-];
+const sections=[{title:'🎁 礼物单',items:groups.gift},{title:'📋 其他单',items:groups.other},{title:'🤝 好友位',items:groups.friend}];
 sections.forEach(sec=>{
 if(!sec.items.length)return;
 const sc=getCounts(sec.items);
-txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n';
-txt+='-'.repeat(42)+'\n';
-// 按陪玩分组展示
+txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n'+'-'.repeat(42)+'\n';
 const byPlayer=new Map();
 sec.items.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!byPlayer.has(k))byPlayer.set(k,[]);byPlayer.get(k).push(r)});
 byPlayer.forEach((items,name)=>{
 const pc=getCounts(items);
 txt+='  陪玩：'+name+'（'+pc.total+'单 '+fmtM(pc.amount)+'）\n';
-items.sort((a,b)=>a.full.localeCompare(b.full));
-items.forEach(r=>{
-txt+='    单号：'+r.orderNo+'\n';
-txt+='    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n';
-txt+='    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.full||r.dt)+'\n';
-txt+='    '+'-'.repeat(35)+'\n'
-});
+items.sort((a,b)=>(a.report_time||'').localeCompare(b.report_time||''));
+items.forEach(r=>{txt+='    单号：'+r.order_no+'\n    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.report_time||'')+'\n    '+'-'.repeat(35)+'\n'});
 txt+='\n'});
 });
 return txt.trim()}
 
-function showExport(text){
-curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
+function showExport(text){curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
 
-$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
-$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.date===d);if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
-$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
-$('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
-
-// ---------- 提交 ----------
+// --- 事件绑定 ---
 $('submitBtn').onclick=()=>{
 const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
 if(!boss){showToast('请填写老板',true);bossIn.focus();return}
@@ -278,15 +313,11 @@ const amt=parseFloat(amountRaw);if(isNaN(amt)||amt<0){showToast('金额必须≥
 if(!orderNo){showToast('请填写单号',true);orderIn.focus();return}
 if(checkDup(orderNo)){if(!confirm('⚠️ 该单号已存在，确定再次提交？\n（'+orderNo+'）')){orderIn.focus();return}}
 const t=fullTs();
-records.push({id:genId(),boss,direct:direct||'',player,rtype,amount:amt.toFixed(2),orderNo,dt:t.dt,full:t.full,date:t.date});
-save();renderAll();
-bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='其他单';amountIn.value='';orderIn.value='';
-orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
-showToast('✅ 报备已提交 · '+rtype+' · '+t.dt)};
+submitData({boss,direct:direct||'',player,rtype,amount:amt.toFixed(2),order_no:orderNo,report_time:t.full,record_date:t.date});
+};
 
-$('clearAll').onclick=()=>{if(!records.length){showToast('暂无记录',false);return}if(confirm('确定清空所有报备记录？不可恢复。')){records=[];save();renderAll();showToast('🗑️ 已清空')}};
+$('clearAll').onclick=deleteAll;
 
-// ---------- 视图切换 ----------
 $('viewTabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;
 const v=t.dataset.view;
 document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
@@ -300,14 +331,19 @@ $('filterTabs').onclick=e=>{const t=e.target.closest('.ftab');if(!t)return;curFi
 document.querySelectorAll('.ftab').forEach(x=>x.classList.toggle('active',x.dataset.filter===curFilter));
 renderRecords()};
 
-// ---------- 初始化 ----------
 $('bossDate').value=todayStr();
 $('bossDate').onchange=renderBoss;
 $('todayBtn').onclick=()=>{$('bossDate').value=todayStr();renderBoss()};
 orderIn.addEventListener('input',validateOrder);
 orderIn.addEventListener('blur',validateOrder);
-load();
-})();
+
+$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
+$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d);if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
+$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
+$('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
+
+// 初始化
+fetchRecords();
 </script>
 </body>
 </html>
