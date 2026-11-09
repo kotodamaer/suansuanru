@@ -201,9 +201,9 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
     <div class="card">
         <div class="fr"><label>持卡人 <span>*</span></label><input id="dHolder" placeholder="持卡人名字"></div>
         <div class="fr"><label>直属</label><input id="dDirect" placeholder="直属（选填）"></div>
-        <div class="fr"><label>预存金额 <span>*</span></label><input id="dAmount" type="number" placeholder="金额" step="0.01" min="0"></div>
+        <div class="fr"><label>预存金额 (固定不扣) <span>*</span></label><input id="dAmount" type="number" placeholder="金额" step="0.01" min="0"></div>
         <div class="fr"><label>开卡奖励</label><input id="dBonus" type="text" placeholder="如：送两局 / 10元 / 无"></div>
-        <div class="fr"><label>卡内余额 <span>*</span></label><input id="dBalance" type="number" placeholder="余额" step="0.01" min="0"></div>
+        <div class="fr"><label>当前卡内余额 <span>*</span></label><input id="dBalance" type="number" placeholder="余额" step="0.01" min="0"></div>
         <button class="btn" id="submitDepositBtn" style="background:#ec4899; box-shadow:0 8px 14px -4px rgba(236,72,153,.25);">提交预存</button>
     </div>
 
@@ -276,7 +276,7 @@ const dHolderIn=$('dHolder'), dDirectIn=$('dDirect'), dAmountIn=$('dAmount'), dB
 
 let records=[], deposits=[], curFilter='all', curExport='', isLoading=false, selectedRecord=null, selectedDeposit=null, deleteMode='single', deleteTargetType='report';
 
-function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2500)}
+function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),3500)}
 function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function fullTs(){const n=new Date(),y=n.getFullYear(),mo=String(n.getMonth()+1).padStart(2,'0'),d=String(n.getDate()).padStart(2,'0'),h=String(n.getHours()).padStart(2,'0'),mi=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');return{dt:h+':'+mi+':'+s,full:y+'-'+mo+'-'+d+' '+h+':'+mi+':'+s,date:y+'-'+mo+'-'+d}}
 function fmtM(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
@@ -426,19 +426,18 @@ if(!orderNo){showToast('填单号',true);orderIn.focus();return}
 if(checkDup(orderNo)){ if(!confirm('⚠️ 单号已存在，继续提交？')) {orderIn.focus();return} }
 if(!fileInput.files || !fileInput.files[0]) { showToast('❌ 必须传图', true); return; }
 
-// ================= 联动扣款逻辑开始 =================
+// ================= 联动扣款弹窗逻辑开始 =================
 let needDeduct = false;
 let targetDeposit = null;
 let newBalance = 0;
 
-// 在预存库里找有没有同名持卡人
-const matchedDeposits = deposits.filter(d => d.card_holder === boss);
+// 在预存库里找有没有同名持卡人（精准匹配去空格）
+const matchedDeposits = deposits.filter(d => (d.card_holder||'').trim() === boss);
 if (matchedDeposits.length > 0) {
-    // 取最新的一条
     targetDeposit = matchedDeposits[matchedDeposits.length - 1];
     const currentBalance = parseFloat(targetDeposit.balance) || 0;
     if (currentBalance >= amt) {
-        const confirmDeduct = confirm(`💳 发现【${boss}】的预存卡，当前余额：${fmtM(currentBalance)} 元。\n\n是否从卡内扣除本单金额 ${fmtM(amt)} 元？\n\n(点“确定”扣款，点“取消”视为现金/新转账)`);
+        const confirmDeduct = confirm(`💳 发现【${boss}】的预存卡，当前卡内余额：${fmtM(currentBalance)} 元。\n\n是否从卡内扣除本单金额 ${fmtM(amt)} 元？\n\n(点“确定”扣款，点“取消”视为现金/新转账)`);
         if (confirmDeduct) {
             needDeduct = true;
             newBalance = currentBalance - amt;
@@ -465,7 +464,7 @@ try {
     }]);
     if (dbError) throw dbError;
 
-    // 2. 如果需要扣款，更新预存表
+    // 2. 静默扣除预存卡余额（只动 balance 字段，绝不动 deposit_amount）
     if (needDeduct && targetDeposit) {
         const historyStr = `${t.full.split(' ')[0]} 结单扣款 -${fmtM(amt)} (单号:${orderNo})\n` + (targetDeposit.history || '');
         const { error: depError } = await supabase.from('deposits').update({
@@ -474,7 +473,7 @@ try {
         }).eq('id', targetDeposit.id);
         
         if (depError) console.error('扣款失败:', depError);
-        else showToast('✅ 结单成功，已自动扣减余额');
+        else showToast('✅ 结单成功，已自动扣减卡内余额');
     } else {
         showToast('✅ 提交成功');
     }
@@ -498,7 +497,9 @@ async function fetchDeposits() {
         if (error) throw error;
         deposits = data || [];
         renderDeposits();
-    } catch (e) { if(deposits.length===0) $('depositList').innerHTML = '<div class="empty">❌ 失败</div>'; }
+    } catch (e) { 
+        if(deposits.length===0) $('depositList').innerHTML = '<div class="empty" style="color:#ef4444">❌ 预存表加载失败: '+e.message+'</div>'; 
+    }
 }
 
 function renderDeposits() {
@@ -531,10 +532,10 @@ window.openDepositModal = function(id) {
     let html = '';
     html += '<div class="row"><span class="r-label">持卡人</span><span class="r-val">'+ esc(d.card_holder||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(d.direct||'—') +'</span></div>';
-    html += '<div class="row"><span class="r-label">预存金额</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">预存金额 (固定)</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">开卡奖励</span><span class="r-val" style="color:#059669">'+ esc(d.bonus_amount || '无') +'</span></div>';
-    html += '<div class="row"><span class="r-label">当前余额</span><span class="r-val" style="color:#be185d;font-size:1.1rem">'+ fmtM(parseFloat(d.balance)||0) +'</span></div>';
-    html += '<div class="row"><span class="r-label">最近操作</span><span class="r-val">'+ (d.report_time||'') +'</span></div>';
+    html += '<div class="row"><span class="r-label">当前卡内余额</span><span class="r-val" style="color:#be185d;font-size:1.1rem">'+ fmtM(parseFloat(d.balance)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">操作时间</span><span class="r-val">'+ (d.report_time||'') +'</span></div>';
     
     if(d.history) {
         html += '<div style="margin-top:15px; padding:10px; background:#f8fafc; border-radius:8px; font-size:0.8rem; color:#475569; white-space:pre-wrap; max-height:120px; overflow-y:auto; border:1px solid #e2e8f0;"><b>扣款记录：</b>\n'+ esc(d.history) +'</div>';
@@ -581,10 +582,13 @@ submitDepositBtn.onclick = async () => {
             record_date: t.date,
             history: ''
         }]);
-        if (error) throw error;
+        if (error) throw new Error('数据库写入失败: ' + error.message);
         dHolderIn.value=''; dDirectIn.value=''; dAmountIn.value=''; dBonusIn.value=''; dBalanceIn.value='';
-        dHolderIn.focus(); showToast('✅ 提交成功'); await fetchDeposits();
-    } catch (e) { showToast('提交失败', true); } 
+        dHolderIn.focus(); showToast('✅ 预存提交成功'); await fetchDeposits();
+    } catch (e) { 
+        console.error(e);
+        showToast(e.message, true); 
+    } 
     finally { submitDepositBtn.disabled = false; submitDepositBtn.textContent = '提交预存'; }
 };
 
