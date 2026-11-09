@@ -3,14 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
-<title>陪玩团 · 共享报备系统</title>
+<title>陪玩团 · 管理系统</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
 body{background:#f7f9fc;padding:16px 12px 40px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
 .container{max-width:500px;width:100%}
-h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
-.subhead{font-size:.82rem;color:#64748b;margin-bottom:18px;border-left:4px solid #3b82f6;padding:8px 12px;background:#eef2ff;border-radius:0 8px 8px 0;line-height:1.5}
+h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weight:700}
+
+.main-tabs{display:flex;background:#e2e8f0;padding:5px;border-radius:16px;margin-bottom:20px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05)}
+.main-tab{flex:1;padding:12px;border:none;background:transparent;border-radius:12px;font-size:1rem;font-weight:700;color:#64748b;cursor:pointer;transition:0.3s}
+.main-tab.active{background:#fff;color:#2563eb;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
 .card{background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.04);padding:20px 18px;margin-bottom:20px;border:1px solid #eef2f6}
 .fr{margin-bottom:16px;display:flex;flex-direction:column}
 .fr label{font-size:.88rem;font-weight:500;color:#334155;margin-bottom:6px}
@@ -51,12 +55,14 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 .rec:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.05)}
 .rec.type-gift{border-left-color:#f59e0b}
 .rec.type-friend{border-left-color:#8b5cf6}
+.rec.deposit-rec{border-left-color:#ec4899;}
 .rec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
 .rec-order{font-weight:700;font-size:.92rem;background:#dbeafe;color:#1e40af;padding:4px 11px;border-radius:30px}
 .rec-badge{font-size:.7rem;padding:4px 9px;border-radius:30px;font-weight:600}
 .bg-gift{background:#fef3c7;color:#b45309}
 .bg-other{background:#dbeafe;color:#1e40af}
 .bg-friend{background:#ede9fe;color:#6d28d9}
+.bg-deposit{background:#fce7f3;color:#be185d}
 .rec-time{font-size:.66rem;color:#94a3b8;background:#f1f5f9;padding:4px 9px;border-radius:30px}
 .rec-detail{display:flex;flex-wrap:wrap;gap:7px 13px;font-size:.88rem;color:#1e293b}
 .rec-detail .f{display:flex;align-items:baseline;gap:4px}
@@ -115,102 +121,139 @@ h1{font-size:1.6rem;color:#1e293b;margin-bottom:4px}
 </head>
 <body>
 <div class="container">
-<h1>🎮 共享报备系统</h1>
-<div class="subhead">单号：日期+接待名字+第几单（如 11.1小九01）<br>☁️ 云端同步 </div>
+<h1>🎮 管理系统</h1>
 
-<div class="card">
-<div class="fr"><label>老板 <span>*</span></label><input id="boss" placeholder="老板昵称"></div>
-<div class="fr"><label>直属</label><input id="direct" placeholder="直属（选填）"></div>
-<div class="fr"><label>陪玩 <span>*</span></label><input id="player" placeholder="陪玩名字"></div>
-<div class="fr"><label>类型 <span>*</span></label><select id="rtype"><option value="主单">📋 主单（除礼物/好友位外）</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
-<div class="fr"><label>金额 <span>*</span></label><input id="amount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
-<div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="helper">格式：日期+接待名字+今天第几单</div><div class="warn-msg" id="orderWarn"><span>⚠️</span> 该单号已被报备，请检查是否重复！</div></div>
-
-<div class="fr">
-  <label>小票/聊天截图凭证 <span>*</span></label>
-  <label class="file-upload" id="fileLabel">
-    <input type="file" id="screenshot" accept="image/*">
-    <span>📸</span>
-    <div id="fileName" style="font-size:0.85rem;font-weight:600">点击选择图片 (必填)</div>
-  </label>
+<div class="main-tabs">
+    <button class="main-tab active" id="tabJiedan" onclick="switchMainTab('jiedan')">📋 结单</button>
+    <button class="main-tab" id="tabYucun" onclick="switchMainTab('yucun')">💳 预存</button>
 </div>
 
-<button class="btn" id="submitBtn">📋 提交报备到云端</button>
+<!-- ==================== 结单板块 ==================== -->
+<div id="sectionJiedan">
+    <div class="card">
+    <div class="fr"><label>老板 <span>*</span></label><input id="boss" placeholder="老板昵称"></div>
+    <div class="fr"><label>直属</label><input id="direct" placeholder="直属（选填）"></div>
+    <div class="fr"><label>陪玩 <span>*</span></label><input id="player" placeholder="陪玩名字"></div>
+    <div class="fr"><label>类型 <span>*</span></label><select id="rtype"><option value="主单">📋 主单</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
+    <div class="fr"><label>金额 <span>*</span></label><input id="amount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
+    <div class="fr"><label>单号 <span>*</span></label><input id="orderNo" placeholder="例如：11.1小九01"><div class="warn-msg" id="orderWarn"><span>⚠️</span> 单号重复</div></div>
+
+    <div class="fr">
+      <label>截图凭证 <span>*</span></label>
+      <label class="file-upload" id="fileLabel">
+        <input type="file" id="screenshot" accept="image/*">
+        <span>📸</span>
+        <div id="fileName" style="font-size:0.85rem;font-weight:600">点击选择图片</div>
+      </label>
+    </div>
+
+    <button class="btn" id="submitBtn">提交结单</button>
+    </div>
+
+    <div class="tabs" id="viewTabs">
+    <button class="tab active" data-view="records">📋 记录</button>
+    <button class="tab" data-view="player">🎮 陪玩</button>
+    <button class="tab" data-view="boss">💰 老板</button>
+    <button class="tab" data-view="direct">👔 直属</button>
+    </div>
+
+    <div class="exp-row">
+    <button class="exp-btn" id="expAll">📄 导出全部</button>
+    <button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日</button>
+    <button class="clr-btn" id="clearAll">🗑️ 全清</button>
+    </div>
+    <div class="exp-prev" id="expPrev"></div>
+    <div class="exp-acts" id="expActs" style="display:none">
+    <button class="mini-btn" id="copyExp">📋 复制</button>
+    <button class="mini-btn" id="closeExp" style="background:#f1f5f9;color:#475569">关闭</button>
+    </div>
+
+    <div id="viewRecords">
+    <div class="stats-bar">
+    <div class="stat-item g"><span class="sl">🎁 礼物单</span><span class="sv" id="sGift">0</span></div>
+    <div class="stat-item o"><span class="sl">📋 主单</span><span class="sv" id="sOther">0</span></div>
+    <div class="stat-item f"><span class="sl">🤝 好友位</span><span class="sv" id="sFriend">0</span></div>
+    </div>
+    <div class="ftabs" id="filterTabs">
+    <button class="ftab active" data-filter="all">全部 <span class="cb" id="cAll">0</span></button>
+    <button class="ftab" data-filter="礼物单">🎁 礼物 <span class="cb" id="cGift">0</span></button>
+    <button class="ftab" data-filter="主单">📋 主单 <span class="cb" id="cOther">0</span></button>
+    <button class="ftab" data-filter="好友位">🤝 好友位 <span class="cb" id="cFriend">0</span></button>
+    </div>
+    <div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2></div>
+    <div id="recList" class="rec-list"><div class="loading-tip">加载中...</div></div>
+    </div>
+
+    <div id="viewPlayer" style="display:none"><div class="sec-title"><h2>🎮 陪玩接单</h2></div><div id="playerStats"></div></div>
+
+    <div id="viewBoss" style="display:none">
+    <div class="sec-title"><h2>💰 老板消费</h2></div>
+    <div class="date-ctrl"><label>日期</label><input type="date" id="bossDate"><button class="mini-btn" id="todayBtn" style="flex:0">今天</button></div>
+    <div class="total-card"><span class="tl">总消费</span><span class="tv" id="bossTotal">¥0.00</span></div>
+    <div id="bossStats"></div>
+    </div>
+
+    <div id="viewDirect" style="display:none"><div class="sec-title"><h2>👔 直属业绩</h2></div><div id="directStats"></div></div>
 </div>
 
-<div class="tabs" id="viewTabs">
-<button class="tab active" data-view="records">📋 报备记录</button>
-<button class="tab" data-view="player">🎮 按陪玩</button>
-<button class="tab" data-view="boss">💰 按老板</button>
-<button class="tab" data-view="direct">👔 按直属</button>
+<!-- ==================== 预存板块 ==================== -->
+<div id="sectionYucun" style="display:none">
+    <div class="card">
+        <div class="fr"><label>持卡人 <span>*</span></label><input id="dHolder" placeholder="持卡人名字"></div>
+        <div class="fr"><label>直属</label><input id="dDirect" placeholder="直属（选填）"></div>
+        <div class="fr"><label>预存金额 <span>*</span></label><input id="dAmount" type="number" placeholder="金额" step="0.01" min="0"></div>
+        <div class="fr"><label>开卡奖励</label><input id="dBonus" type="text" placeholder="如：送两局 / 10元 / 无"></div>
+        <div class="fr"><label>卡内余额 <span>*</span></label><input id="dBalance" type="number" placeholder="余额" step="0.01" min="0"></div>
+        <button class="btn" id="submitDepositBtn" style="background:#ec4899; box-shadow:0 8px 14px -4px rgba(236,72,153,.25);">提交预存</button>
+    </div>
+
+    <div class="sec-title"><h2>💳 预存记录 <span class="badge" id="depositCount">0</span></h2><button class="clr-btn" id="clearAllDeposit">🗑️ 全清</button></div>
+    <div id="depositList" class="rec-list"><div class="loading-tip">加载中...</div></div>
 </div>
 
-<div class="exp-row">
-<button class="exp-btn" id="expAll">📄 导出全部</button>
-<button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日</button>
-<button class="clr-btn" id="clearAll" title="清空所有云端数据">🗑️ 全清</button>
-</div>
-<div class="exp-prev" id="expPrev"></div>
-<div class="exp-acts" id="expActs" style="display:none">
-<button class="mini-btn" id="copyExp">📋 复制到剪贴板</button>
-<button class="mini-btn" id="closeExp" style="background:#f1f5f9;color:#475569">关闭</button>
 </div>
 
-<div id="viewRecords">
-<div class="stats-bar">
-<div class="stat-item g"><span class="sl">🎁 礼物单</span><span class="sv" id="sGift">0</span></div>
-<div class="stat-item o"><span class="sl">📋 主单</span><span class="sv" id="sOther">0</span></div>
-<div class="stat-item f"><span class="sl">🤝 好友位</span><span class="sv" id="sFriend">0</span></div>
-</div>
-<div class="ftabs" id="filterTabs">
-<button class="ftab active" data-filter="all">全部 <span class="cb" id="cAll">0</span></button>
-<button class="ftab" data-filter="礼物单">🎁 礼物 <span class="cb" id="cGift">0</span></button>
-<button class="ftab" data-filter="主单">📋 其他 <span class="cb" id="cOther">0</span></button>
-<button class="ftab" data-filter="好友位">🤝 好友位 <span class="cb" id="cFriend">0</span></button>
-</div>
-<div class="sec-title"><h2>📋 报备记录 <span class="badge" id="recCount">0</span></h2></div>
-<div id="recList" class="rec-list"><div class="loading-tip">数据加载中...</div></div>
-</div>
-
-<div id="viewPlayer" style="display:none"><div class="sec-title"><h2>🎮 陪玩接单归类</h2></div><div id="playerStats"></div></div>
-
-<div id="viewBoss" style="display:none">
-<div class="sec-title"><h2>💰 老板消费归类</h2></div>
-<div class="date-ctrl"><label>日期</label><input type="date" id="bossDate"><button class="mini-btn" id="todayBtn" style="flex:0">今天</button></div>
-<div class="total-card"><span class="tl">当日总消费</span><span class="tv" id="bossTotal">¥0.00</span></div>
-<div id="bossStats"></div>
-</div>
-
-<div id="viewDirect" style="display:none"><div class="sec-title"><h2>👔 直属业绩归类</h2></div><div id="directStats"></div></div>
-
-<div class="footer">数据已接入云端 · 所有人实时共享 · 刷新不丢失</div>
-</div>
-
+<!-- 结单详情弹窗 -->
 <div class="modal" id="detailModal">
 <div class="modal-content">
 <div class="modal-header">
-<div class="modal-title" id="mTitle">报备详情</div>
+<div class="modal-title" id="mTitle">详情</div>
 <button class="modal-close" id="mClose">✖</button>
 </div>
 <div class="modal-body" id="mBody"></div>
 <div class="modal-footer">
-<button class="btn-danger" id="mDelete">🗑️ 删除此单</button>
+<button class="btn-danger" id="mDelete">🗑️ 删除</button>
 <button class="btn-cancel" id="mCancel">关闭</button>
 </div>
 </div>
 </div>
 
+<!-- 预存详情弹窗 -->
+<div class="modal" id="depositModal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title" id="dmTitle">详情</div>
+<button class="modal-close" id="dmClose">✖</button>
+</div>
+<div class="modal-body" id="dmBody"></div>
+<div class="modal-footer">
+<button class="btn-danger" id="dmDelete">🗑️ 删除</button>
+<button class="btn-cancel" id="dmCancel">关闭</button>
+</div>
+</div>
+</div>
+
+<!-- 密码验证弹窗 -->
 <div class="modal" id="pwdModal">
 <div class="modal-content" style="text-align:center">
 <div class="modal-header" style="justify-content:center;border:none;padding-bottom:0">
 <div class="modal-title" style="color:#ef4444">🔒 安全验证</div>
 </div>
 <div class="modal-body">
-<p style="font-size:.9rem;color:#64748b;margin-bottom:10px">删除数据需管理员密码</p>
-<input type="password" id="adminPwd" class="pwd-input" placeholder="请输入密码" autocomplete="off">
+<input type="password" id="adminPwd" class="pwd-input" placeholder="输入密码" autocomplete="off">
 </div>
 <div class="modal-footer" style="margin-top:0">
-<button class="btn-danger" id="confirmDeleteBtn">确认删除</button>
+<button class="btn-danger" id="confirmDeleteBtn">确认</button>
 <button class="btn-cancel" id="cancelPwdBtn">取消</button>
 </div>
 </div>
@@ -224,13 +267,14 @@ const SUPABASE_URL = 'https://jlqfhzcqxxmatncogfkn.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_JX8kwFixnHM_aEogGyWSHw_JH4JGZpw';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔑 管理员密码设置在这里
 const ADMIN_PASSWORD = '123456'; 
 
 const $=id=>document.getElementById(id);
 const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast'),submitBtn=$('submitBtn');
 const fileInput=$('screenshot'), fileNameDisplay=$('fileName'), fileLabel=$('fileLabel');
-let records=[],curFilter='all',curExport='',isLoading=false,selectedRecord=null,deleteMode='single';
+const dHolderIn=$('dHolder'), dDirectIn=$('dDirect'), dAmountIn=$('dAmount'), dBonusIn=$('dBonus'), dBalanceIn=$('dBalance'), submitDepositBtn=$('submitDepositBtn');
+
+let records=[], deposits=[], curFilter='all', curExport='', isLoading=false, selectedRecord=null, selectedDeposit=null, deleteMode='single', deleteTargetType='report';
 
 function showToast(m,e){toastEl.textContent=m;toastEl.style.background=e?'#b91c1c':'#0f172a';toastEl.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(()=>toastEl.classList.remove('show'),2500)}
 function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
@@ -238,43 +282,44 @@ function fullTs(){const n=new Date(),y=n.getFullYear(),mo=String(n.getMonth()+1)
 function fmtM(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
+window.switchMainTab = function(tab) {
+    if(tab === 'jiedan') {
+        $('tabJiedan').classList.add('active'); $('tabYucun').classList.remove('active');
+        $('sectionJiedan').style.display = 'block'; $('sectionYucun').style.display = 'none';
+    } else {
+        $('tabYucun').classList.add('active'); $('tabJiedan').classList.remove('active');
+        $('sectionYucun').style.display = 'block'; $('sectionJiedan').style.display = 'none';
+    }
+}
+
 fileInput.addEventListener('change', function() {
     if(this.files && this.files[0]) {
         const file = this.files[0];
         if(file.size > 5 * 1024 * 1024) {
-            showToast('❌ 图片太大，请压缩后上传 (小于5MB)', true);
-            this.value = '';
-            fileNameDisplay.textContent = '点击选择图片 (必填)';
-            fileLabel.style.borderColor = '#cbd5e1';
-            fileLabel.style.background = '#f8fafc';
-            return;
+            showToast('❌ 图片太大', true); this.value = ''; fileNameDisplay.textContent = '点击选择图片';
+            fileLabel.style.borderColor = '#cbd5e1'; fileLabel.style.background = '#f8fafc'; return;
         }
         fileNameDisplay.textContent = '已选择: ' + file.name;
-        fileLabel.style.borderColor = '#10b981';
-        fileLabel.style.background = '#ecfdf5';
+        fileLabel.style.borderColor = '#10b981'; fileLabel.style.background = '#ecfdf5';
     } else {
-        fileNameDisplay.textContent = '点击选择图片 (必填)';
-        fileLabel.style.borderColor = '#cbd5e1';
-        fileLabel.style.background = '#f8fafc';
+        fileNameDisplay.textContent = '点击选择图片';
+        fileLabel.style.borderColor = '#cbd5e1'; fileLabel.style.background = '#f8fafc';
     }
 });
 
 async function fetchRecords() {
-    if(isLoading) return;
-    isLoading = true;
-    if(records.length===0) $('recList').innerHTML = '<div class="loading-tip">☁️ 正在同步云端数据...</div>';
+    if(isLoading) return; isLoading = true;
+    if(records.length===0) $('recList').innerHTML = '<div class="loading-tip">加载中...</div>';
     try {
         const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: true });
         if (error) throw error;
         records = data || [];
-        renderAll();
+        renderRecords(); renderPlayer(); renderBoss(); renderDirect();
     } catch (e) {
         console.error(e);
-        if(records.length===0) $('recList').innerHTML = '<div class="empty" style="color:#ef4444">❌ 加载失败：'+e.message+'</div>';
-        showToast('数据同步失败', true);
-    } finally {
-        isLoading = false;
-    }
+        if(records.length===0) $('recList').innerHTML = '<div class="empty" style="color:#ef4444">❌ 失败: '+e.message+'</div>';
+        showToast('同步失败', true);
+    } finally { isLoading = false; }
 }
 
 function checkDup(no){if(!no||!no.trim())return false;return records.some(r=>r.order_no&&r.order_no.trim()===no.trim())}
@@ -289,19 +334,19 @@ $('cAll').textContent=c.total;$('cGift').textContent=c.g;$('cOther').textContent
 $('recCount').textContent=c.total;
 const filtered=curFilter==='all'?[...records]:records.filter(r=>r.rtype===curFilter);
 const sorted=filtered.reverse();
-if(!sorted.length){$('recList').innerHTML='<div class="empty">'+(records.length===0?'✨ 暂无报备记录':'✨ 当前筛选下暂无记录')+'</div>';return}
+if(!sorted.length){$('recList').innerHTML='<div class="empty">暂无记录</div>';return}
 let h='';
 sorted.forEach(r=>{
 const cls=r.rtype==='礼物单'?'type-gift':r.rtype==='好友位'?'type-friend':'';
 const badge=r.rtype==='礼物单'?'bg-gift':r.rtype==='好友位'?'bg-friend':'bg-other';
-const bText=r.rtype==='礼物单'?'🎁 礼物单':r.rtype==='好友位'?'🤝 好友位':'📋 主单';
+const bText=r.rtype==='礼物单'?'🎁 礼物':r.rtype==='好友位'?'🤝 好友位':'📋 主单';
 const timeStr = r.report_time || '';
 h+='<div class="rec '+cls+'" onclick="openModal('+r.id+')"><div class="rec-header"><span class="rec-order">'+esc(r.order_no||'无单号')+'</span><span class="rec-badge '+badge+'">'+bText+'</span><span class="rec-time">📅 '+timeStr+'</span></div><div class="rec-detail"><div class="f"><span class="fl">老板</span><span class="fv">'+esc(r.boss||'—')+'</span></div><div class="f"><span class="fl">直属</span><span class="fv">'+esc(r.direct||'—')+'</span></div><div class="f"><span class="fl">陪玩</span><span class="fv">'+esc(r.player||'—')+'</span></div><div class="f"><span class="fl">💰 金额</span><span class="fv amt">'+fmtM(parseFloat(r.amount)||0)+'</span></div></div></div>'
 });
 $('recList').innerHTML=h}
 
 function renderPlayer(){
-if(!records.length){$('playerStats').innerHTML='<div class="empty">暂无陪玩数据</div>';return}
+if(!records.length){$('playerStats').innerHTML='<div class="empty">暂无数据</div>';return}
 const m=new Map();records.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
 const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
 let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">🎮 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
@@ -312,213 +357,284 @@ const d=$('bossDate').value||todayStr();
 const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));
 const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
 $('bossTotal').textContent=fmtM(total);
-if(!f.length){$('bossStats').innerHTML='<div class="empty">📅 '+d+' 暂无记录</div>';return}
+if(!f.length){$('bossStats').innerHTML='<div class="empty">今日暂无</div>';return}
 const m=new Map();f.forEach(r=>{const k=(r.boss||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
 const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
 let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👤 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
 $('bossStats').innerHTML=h}
 
 function renderDirect(){
-if(!records.length){$('directStats').innerHTML='<div class="empty">暂无直属数据</div>';return}
+if(!records.length){$('directStats').innerHTML='<div class="empty">暂无数据</div>';return}
 const m=new Map();records.forEach(r=>{const k=(r.direct||'').trim()||'无直属';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});
 const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);
 let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👔 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});
 $('directStats').innerHTML=h}
-
-function renderAll(){renderRecords();renderPlayer();renderBoss();renderDirect()}
 
 window.openModal = function(id) {
     selectedRecord = records.find(r => r.id === id);
     if(!selectedRecord) return;
     const r = selectedRecord;
     document.getElementById('mTitle').textContent = '单号：' + (r.order_no || '无');
-    
     let html = '';
-    html += '<div class="row"><span class="r-label">报备类型</span><span class="r-val">'+ (r.rtype||'主单') +'</span></div>';
+    html += '<div class="row"><span class="r-label">类型</span><span class="r-val">'+ (r.rtype||'主单') +'</span></div>';
     html += '<div class="row"><span class="r-label">老板</span><span class="r-val">'+ esc(r.boss||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(r.direct||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">陪玩</span><span class="r-val">'+ esc(r.player||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">金额</span><span class="r-val" style="color:#059669;font-size:1.1rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
-    html += '<div class="row"><span class="r-label">报备时间</span><span class="r-val">'+ (r.report_time||'') +'</span></div>';
-    
+    html += '<div class="row"><span class="r-label">时间</span><span class="r-val">'+ (r.report_time||'') +'</span></div>';
     html += '<div style="margin-top:15px; text-align:center;">';
-    html += '<div style="font-size:.8rem;color:#64748b;margin-bottom:5px;text-align:left;">转账截图凭证</div>';
     if(r.image_url) {
         html += '<a href="'+r.image_url+'" target="_blank"><img src="'+r.image_url+'" style="width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:zoom-in;"></a>';
     } else {
-        html += '<div style="padding:20px;background:#f1f5f9;color:#94a3b8;border-radius:12px;font-size:.8rem;">该记录暂无图片(旧数据)</div>';
+        html += '<div style="padding:20px;background:#f1f5f9;color:#94a3b8;border-radius:12px;font-size:.8rem;">无图片</div>';
     }
     html += '</div>';
-    
     document.getElementById('mBody').innerHTML = html;
     document.getElementById('detailModal').classList.add('show');
 }
 
-function closeModal() {
-    document.getElementById('detailModal').classList.remove('show');
-    selectedRecord = null;
-}
+function closeModal() { document.getElementById('detailModal').classList.remove('show'); selectedRecord = null; }
 document.getElementById('mClose').onclick = closeModal;
 document.getElementById('mCancel').onclick = closeModal;
-
 document.getElementById('mDelete').onclick = () => {
     if(!selectedRecord) return;
-    deleteMode = 'single';
+    deleteMode = 'single'; deleteTargetType = 'report';
     document.getElementById('adminPwd').value = '';
     document.getElementById('pwdModal').classList.add('show');
     setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
 };
 $('clearAll').onclick = () => {
     if(!records.length){showToast('暂无记录',false);return}
-    deleteMode = 'all';
+    deleteMode = 'all'; deleteTargetType = 'report';
     document.getElementById('adminPwd').value = ''; 
     document.getElementById('pwdModal').classList.add('show');
     setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
 };
-document.getElementById('cancelPwdBtn').onclick = () => {
-    document.getElementById('pwdModal').classList.remove('show');
-};
 
-document.getElementById('confirmDeleteBtn').onclick = async () => {
-    const pwd = document.getElementById('adminPwd').value;
-    if(pwd !== ADMIN_PASSWORD) {
-        showToast('❌ 密码错误，无权限删除！', true);
-        document.getElementById('adminPwd').value = '';
-        document.getElementById('adminPwd').focus();
-        return;
-    }
-
-    const btn = document.getElementById('confirmDeleteBtn');
-    btn.disabled = true; btn.textContent = '处理中...';
-
-    try {
-        if(deleteMode === 'single') {
-            const { error } = await supabase.from('reports').delete().eq('id', selectedRecord.id);
-            if (error) throw error;
-            
-            if(selectedRecord.image_url) {
-                const path = selectedRecord.image_url.split('/screenshots/')[1];
-                if(path) await supabase.storage.from('screenshots').remove([path]);
-            }
-            showToast('✅ 单条记录及图片已删除');
-            closeModal();
-        } else if(deleteMode === 'all') {
-            const { error } = await supabase.from('reports').delete().gt('id', 0);
-            if(error) throw error;
-            showToast('🗑️ 云端数据已全部清空');
-        }
-        
-        document.getElementById('pwdModal').classList.remove('show');
-        fetchRecords();
-    } catch (e) {
-        console.error(e);
-        showToast('删除失败：'+e.message, true);
-    } finally {
-        btn.disabled = false; btn.textContent = '确认删除';
-    }
-};
-document.getElementById('adminPwd').addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') document.getElementById('confirmDeleteBtn').click();
-});
-
-function buildExport(list,title){
-if(!list.length)return '📭 没有记录可导出';
-const c=getCounts(list);
-let txt=title+'\n'+'='.repeat(42)+'\n';
-txt+='📊 总计：'+c.total+' 单  |  💰 总额：'+fmtM(c.amount)+'\n';
-txt+='🎁 礼物单：'+c.g+'  |  📋 主单：'+c.o+'  |  🤝 好友位：'+c.f+'\n';
-txt+='='.repeat(42)+'\n\n';
-const groups={gift:[],other:[],friend:[]};
-list.forEach(r=>{if(r.rtype==='礼物单')groups.gift.push(r);else if(r.rtype==='好友位')groups.friend.push(r);else groups.other.push(r)});
-const sections=[{title:'🎁 礼物单',items:groups.gift},{title:'📋 主单',items:groups.other},{title:'🤝 好友位',items:groups.friend}];
-sections.forEach(sec=>{
-if(!sec.items.length)return;
-const sc=getCounts(sec.items);
-txt+='【'+sec.title+'】共 '+sc.total+' 单  |  金额 '+fmtM(sc.amount)+'\n';
-txt+='-'.repeat(42)+'\n';
-const byPlayer=new Map();
-sec.items.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!byPlayer.has(k))byPlayer.set(k,[]);byPlayer.get(k).push(r)});
-byPlayer.forEach((items,name)=>{
-const pc=getCounts(items);
-txt+='  陪玩：'+name+'（'+pc.total+'单 '+fmtM(pc.amount)+'）\n';
-items.sort((a,b)=>(a.report_time||'').localeCompare(b.report_time||''));
-items.forEach(r=>{
-txt+='    单号：'+r.order_no+'\n';
-txt+='    老板：'+r.boss+'  |  直属：'+(r.direct||'—')+'\n';
-txt+='    金额：'+fmtM(parseFloat(r.amount)||0)+'  |  时间：'+(r.report_time||'')+'\n';
-txt+='    '+'-'.repeat(35)+'\n'
-});
-txt+='\n'});
-});
-return txt.trim()}
-
-function showExport(text){curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
-$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录可导出',true);return}showExport(buildExport(records,'📋 全部报备记录'));showToast('已生成导出文本')};
-$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));if(!f.length){showToast('今日暂无记录',true);return}showExport(buildExport(f,'📅 '+d+' 当日报备记录'));showToast('已生成今日导出')};
-$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制到剪贴板')}catch(e){showToast('复制失败，请手动选择',true)}};
+$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录',true);return}showExport(buildExport(records,'📋 全部记录'));showToast('已生成')};
+$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));if(!f.length){showToast('今日无记录',true);return}showExport(buildExport(f,'📅 '+d+' 记录'));showToast('已生成')};
+$('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制')}catch(e){showToast('复制失败',true)}};
 $('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
 
 submitBtn.onclick=async()=>{
 const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
-if(!boss){showToast('请填写老板',true);bossIn.focus();return}
-if(!player){showToast('请填写陪玩',true);playerIn.focus();return}
-if(!amountRaw){showToast('请填写金额',true);amountIn.focus();return}
-const amt=parseFloat(amountRaw);if(isNaN(amt)||amt<0){showToast('金额必须≥0',true);amountIn.focus();return}
-if(!orderNo){showToast('请填写单号',true);orderIn.focus();return}
-if(checkDup(orderNo)){if(!confirm('⚠️ 该单号已在云端存在，确定再次提交？\n（'+orderNo+'）')){orderIn.focus();return}}
+if(!boss){showToast('填老板',true);bossIn.focus();return}
+if(!player){showToast('填陪玩',true);playerIn.focus();return}
+if(!amountRaw){showToast('填金额',true);amountIn.focus();return}
+const amt=parseFloat(amountRaw);if(isNaN(amt)||amt<0){showToast('金额需≥0',true);amountIn.focus();return}
+if(!orderNo){showToast('填单号',true);orderIn.focus();return}
+if(checkDup(orderNo)){ if(!confirm('⚠️ 单号已存在，继续提交？')) {orderIn.focus();return} }
+if(!fileInput.files || !fileInput.files[0]) { showToast('❌ 必须传图', true); return; }
 
-if(!fileInput.files || !fileInput.files[0]) {
-    showToast('❌ 请必须上传截图凭证！', true);
-    fileLabel.scrollIntoView({behavior: 'smooth', block: 'center'});
-    return;
+// ================= 联动扣款逻辑开始 =================
+let needDeduct = false;
+let targetDeposit = null;
+let newBalance = 0;
+
+// 在预存库里找有没有同名持卡人
+const matchedDeposits = deposits.filter(d => d.card_holder === boss);
+if (matchedDeposits.length > 0) {
+    // 取最新的一条
+    targetDeposit = matchedDeposits[matchedDeposits.length - 1];
+    const currentBalance = parseFloat(targetDeposit.balance) || 0;
+    if (currentBalance >= amt) {
+        const confirmDeduct = confirm(`💳 发现【${boss}】的预存卡，当前余额：${fmtM(currentBalance)} 元。\n\n是否从卡内扣除本单金额 ${fmtM(amt)} 元？\n\n(点“确定”扣款，点“取消”视为现金/新转账)`);
+        if (confirmDeduct) {
+            needDeduct = true;
+            newBalance = currentBalance - amt;
+        }
+    } else {
+        alert(`⚠️ 发现【${boss}】的预存卡，但余额不足！\n当前余额：${fmtM(currentBalance)} 元，本单需要：${fmtM(amt)} 元。\n\n将按普通结单记录，不扣减余额。`);
+    }
 }
+// ================= 联动扣款逻辑结束 =================
 
 const file = fileInput.files[0];
 const t=fullTs();
-submitBtn.disabled = true; submitBtn.textContent = '☁️ 正在上传图片及数据...';
-
+submitBtn.disabled = true; submitBtn.textContent = '提交中...';
 try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('screenshots')
-        .upload(fileName, file);
-
-    if (uploadError) throw new Error('图片上传失败: ' + uploadError.message);
-
+    const { error: uploadError } = await supabase.storage.from('screenshots').upload(fileName, file);
+    if (uploadError) throw new Error('图传失败: ' + uploadError.message);
     const { data: urlData } = supabase.storage.from('screenshots').getPublicUrl(fileName);
-    const imageUrl = urlData.publicUrl;
-
+    
+    // 1. 提交结单记录
     const { error: dbError } = await supabase.from('reports').insert([{
-        boss: boss, 
-        direct: direct || '', 
-        player: player, 
-        rtype: rtype, 
-        amount: amt, 
-        order_no: orderNo, 
-        report_time: t.full, 
-        record_date: t.date,
-        image_url: imageUrl
+        boss: boss, direct: direct || '', player: player, rtype: rtype, amount: amt, order_no: orderNo, report_time: t.full, record_date: t.date, image_url: urlData.publicUrl
     }]);
-    
     if (dbError) throw dbError;
-    
-    bossIn.value='';directIn.value='';playerIn.value='';typeIn.value='主单';amountIn.value='';orderIn.value='';
-    fileInput.value=''; 
-    fileNameDisplay.textContent = '点击选择图片 (必填)';
+
+    // 2. 如果需要扣款，更新预存表
+    if (needDeduct && targetDeposit) {
+        const historyStr = `${t.full.split(' ')[0]} 结单扣款 -${fmtM(amt)} (单号:${orderNo})\n` + (targetDeposit.history || '');
+        const { error: depError } = await supabase.from('deposits').update({
+            balance: newBalance,
+            history: historyStr
+        }).eq('id', targetDeposit.id);
+        
+        if (depError) console.error('扣款失败:', depError);
+        else showToast('✅ 结单成功，已自动扣减余额');
+    } else {
+        showToast('✅ 提交成功');
+    }
+
+    bossIn.value='';directIn.value='';playerIn.value='';amountIn.value='';orderIn.value='';
+    fileInput.value=''; fileNameDisplay.textContent = '点击选择图片';
     fileLabel.style.borderColor = '#cbd5e1'; fileLabel.style.background = '#f8fafc';
     orderIn.classList.remove('input-warn');orderWarn.style.display='none';bossIn.focus();
     
-    showToast('✅ 报备及截图已同步到云端');
     await fetchRecords();
-} catch (e) {
-    console.error(e);
-    showToast(e.message, true);
-} finally {
-    submitBtn.disabled = false; submitBtn.textContent = '📋 提交报备到云端';
-}
+    await fetchDeposits();
+} catch (e) { showToast(e.message, true); } 
+finally { submitBtn.disabled = false; submitBtn.textContent = '提交结单'; }
 };
+
+async function fetchDeposits() {
+    if(isLoading) return;
+    if(deposits.length===0) $('depositList').innerHTML = '<div class="loading-tip">加载中...</div>';
+    try {
+        const { data, error } = await supabase.from('deposits').select('*').order('created_at', { ascending: true });
+        if (error) throw error;
+        deposits = data || [];
+        renderDeposits();
+    } catch (e) { if(deposits.length===0) $('depositList').innerHTML = '<div class="empty">❌ 失败</div>'; }
+}
+
+function renderDeposits() {
+    $('depositCount').textContent = deposits.length;
+    const sorted = [...deposits].reverse();
+    if(!sorted.length) { $('depositList').innerHTML = '<div class="empty">暂无记录</div>'; return; }
+    let h = '';
+    sorted.forEach(d => {
+        h += `<div class="rec deposit-rec" onclick="openDepositModal(${d.id})">
+            <div class="rec-header">
+                <span class="rec-order" style="background:#fce7f3; color:#be185d;">👤 ${esc(d.card_holder || '无')}</span>
+                <span class="rec-badge bg-deposit">💳 预存</span>
+                <span class="rec-time">📅 ${d.report_time || ''}</span>
+            </div>
+            <div class="rec-detail">
+                <div class="f"><span class="fl">直属</span><span class="fv">${esc(d.direct || '—')}</span></div>
+                <div class="f"><span class="fl">预存</span><span class="fv">${fmtM(parseFloat(d.deposit_amount) || 0)}</span></div>
+                <div class="f"><span class="fl">余额</span><span class="fv amt" style="color:#be185d;">${fmtM(parseFloat(d.balance) || 0)}</span></div>
+            </div>
+        </div>`;
+    });
+    $('depositList').innerHTML = h;
+}
+
+window.openDepositModal = function(id) {
+    selectedDeposit = deposits.find(d => d.id === id);
+    if(!selectedDeposit) return;
+    const d = selectedDeposit;
+    document.getElementById('dmTitle').textContent = '预存详情';
+    let html = '';
+    html += '<div class="row"><span class="r-label">持卡人</span><span class="r-val">'+ esc(d.card_holder||'—') +'</span></div>';
+    html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(d.direct||'—') +'</span></div>';
+    html += '<div class="row"><span class="r-label">预存金额</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">开卡奖励</span><span class="r-val" style="color:#059669">'+ esc(d.bonus_amount || '无') +'</span></div>';
+    html += '<div class="row"><span class="r-label">当前余额</span><span class="r-val" style="color:#be185d;font-size:1.1rem">'+ fmtM(parseFloat(d.balance)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">最近操作</span><span class="r-val">'+ (d.report_time||'') +'</span></div>';
+    
+    if(d.history) {
+        html += '<div style="margin-top:15px; padding:10px; background:#f8fafc; border-radius:8px; font-size:0.8rem; color:#475569; white-space:pre-wrap; max-height:120px; overflow-y:auto; border:1px solid #e2e8f0;"><b>扣款记录：</b>\n'+ esc(d.history) +'</div>';
+    }
+
+    document.getElementById('dmBody').innerHTML = html;
+    document.getElementById('depositModal').classList.add('show');
+}
+function closeDepositModal() { document.getElementById('depositModal').classList.remove('show'); selectedDeposit = null; }
+document.getElementById('dmClose').onclick = closeDepositModal;
+document.getElementById('dmCancel').onclick = closeDepositModal;
+document.getElementById('dmDelete').onclick = () => {
+    if(!selectedDeposit) return;
+    deleteMode = 'single'; deleteTargetType = 'deposit';
+    document.getElementById('adminPwd').value = '';
+    document.getElementById('pwdModal').classList.add('show');
+    setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
+};
+$('clearAllDeposit').onclick = () => {
+    if(!deposits.length){showToast('暂无记录',false);return}
+    deleteMode = 'all'; deleteTargetType = 'deposit';
+    document.getElementById('adminPwd').value = ''; 
+    document.getElementById('pwdModal').classList.add('show');
+    setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
+};
+
+submitDepositBtn.onclick = async () => {
+    const holder = dHolderIn.value.trim(), direct = dDirectIn.value.trim();
+    const amountRaw = dAmountIn.value.trim(), bonus = dBonusIn.value.trim(), balanceRaw = dBalanceIn.value.trim();
+    if(!holder||!amountRaw||!balanceRaw){ showToast('必填项为空', true); return; }
+    const amount = parseFloat(amountRaw), balance = parseFloat(balanceRaw);
+    if(isNaN(amount)||isNaN(balance)||amount<0||balance<0){ showToast('金额格式不对', true); return; }
+
+    const t = fullTs();
+    submitDepositBtn.disabled = true; submitDepositBtn.textContent = '提交中...';
+    try {
+        const { error } = await supabase.from('deposits').insert([{
+            card_holder: holder, 
+            direct: direct || '', 
+            deposit_amount: amount, 
+            bonus_amount: bonus || '无', 
+            balance: balance, 
+            report_time: t.full, 
+            record_date: t.date,
+            history: ''
+        }]);
+        if (error) throw error;
+        dHolderIn.value=''; dDirectIn.value=''; dAmountIn.value=''; dBonusIn.value=''; dBalanceIn.value='';
+        dHolderIn.focus(); showToast('✅ 提交成功'); await fetchDeposits();
+    } catch (e) { showToast('提交失败', true); } 
+    finally { submitDepositBtn.disabled = false; submitDepositBtn.textContent = '提交预存'; }
+};
+
+document.getElementById('cancelPwdBtn').onclick = () => { document.getElementById('pwdModal').classList.remove('show'); };
+document.getElementById('confirmDeleteBtn').onclick = async () => {
+    const pwd = document.getElementById('adminPwd').value;
+    if(pwd !== ADMIN_PASSWORD) { showToast('❌ 密码错误', true); document.getElementById('adminPwd').value = ''; document.getElementById('adminPwd').focus(); return; }
+    const btn = document.getElementById('confirmDeleteBtn'); btn.disabled = true; btn.textContent = '处理中...';
+    try {
+        if(deleteTargetType === 'report') {
+            if(deleteMode === 'single') {
+                const { error } = await supabase.from('reports').delete().eq('id', selectedRecord.id); if (error) throw error;
+                if(selectedRecord.image_url) { const path = selectedRecord.image_url.split('/screenshots/')[1]; if(path) await supabase.storage.from('screenshots').remove([path]); }
+                closeModal();
+            } else { const { error } = await supabase.from('reports').delete().gt('id', 0); if(error) throw error; }
+            await fetchRecords();
+        } else {
+            if(deleteMode === 'single') {
+                const { error } = await supabase.from('deposits').delete().eq('id', selectedDeposit.id); if (error) throw error; closeDepositModal();
+            } else { const { error } = await supabase.from('deposits').delete().gt('id', 0); if(error) throw error; }
+            await fetchDeposits();
+        }
+        document.getElementById('pwdModal').classList.remove('show'); showToast('✅ 已删除');
+    } catch (e) { showToast('删除失败', true); } 
+    finally { btn.disabled = false; btn.textContent = '确认'; }
+};
+document.getElementById('adminPwd').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('confirmDeleteBtn').click(); });
+
+function buildExport(list,title){
+if(!list.length)return '无记录';
+const c=getCounts(list);
+let txt=title+'\n'+'='.repeat(30)+'\n📊 总计：'+c.total+' 单 | 总额：'+fmtM(c.amount)+'\n🎁 礼物：'+c.g+' | 📋 主单：'+c.o+' | 🤝 好友：'+c.f+'\n'+'='.repeat(30)+'\n\n';
+const groups={gift:[],other:[],friend:[]};
+list.forEach(r=>{if(r.rtype==='礼物单')groups.gift.push(r);else if(r.rtype==='好友位')groups.friend.push(r);else groups.other.push(r)});
+[{title:'🎁 礼物',items:groups.gift},{title:'📋 主单',items:groups.other},{title:'🤝 好友位',items:groups.friend}].forEach(sec=>{
+if(!sec.items.length)return;
+const sc=getCounts(sec.items);
+txt+='【'+sec.title+'】共 '+sc.total+' 单 | 金额 '+fmtM(sc.amount)+'\n'+'-'.repeat(30)+'\n';
+const byPlayer=new Map();
+sec.items.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!byPlayer.has(k))byPlayer.set(k,[]);byPlayer.get(k).push(r)});
+byPlayer.forEach((items,name)=>{
+txt+='  '+name+' ('+items.length+'单)\n';
+items.sort((a,b)=>(a.report_time||'').localeCompare(b.report_time||''));
+items.forEach(r=>{
+txt+='    单号:'+r.order_no+' | 老板:'+r.boss+' | 直属:'+(r.direct||'—')+'\n    金额:'+fmtM(parseFloat(r.amount)||0)+' | '+r.report_time+'\n';
+});
+txt+='\n'});
+});
+return txt.trim()}
+function showExport(text){curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
 
 $('viewTabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;
 const v=t.dataset.view;
@@ -528,18 +644,15 @@ $('viewPlayer').style.display=v==='player'?'block':'none';
 $('viewBoss').style.display=v==='boss'?'block':'none';
 $('viewDirect').style.display=v==='direct'?'block':'none';
 if(v==='boss')renderBoss()};
-
 $('filterTabs').onclick=e=>{const t=e.target.closest('.ftab');if(!t)return;curFilter=t.dataset.filter;
-document.querySelectorAll('.ftab').forEach(x=>x.classList.toggle('active',x.dataset.filter===curFilter));
-renderRecords()};
+document.querySelectorAll('.ftab').forEach(x=>x.classList.toggle('active',x.dataset.filter===curFilter)); renderRecords()};
 
 $('bossDate').value=todayStr();
 $('bossDate').onchange=renderBoss;
 $('todayBtn').onclick=()=>{$('bossDate').value=todayStr();renderBoss()};
 orderIn.addEventListener('input',validateOrder);
 orderIn.addEventListener('blur',validateOrder);
-fetchRecords();
-
+fetchRecords(); fetchDeposits();
 })();
 </script>
 </body>
