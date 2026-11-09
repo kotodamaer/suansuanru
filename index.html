@@ -437,6 +437,7 @@ if (matchedDeposits.length > 0) {
     targetDeposit = matchedDeposits[matchedDeposits.length - 1];
     const currentBalance = parseFloat(targetDeposit.balance) || 0;
     if (currentBalance >= amt) {
+        // 使用浏览器自带的同步弹窗，确保100%弹出来
         const confirmDeduct = confirm(`💳 发现【${boss}】的预存卡，当前卡内余额：${fmtM(currentBalance)} 元。\n\n是否从卡内扣除本单金额 ${fmtM(amt)} 元？\n\n(点“确定”扣款，点“取消”视为现金/新转账)`);
         if (confirmDeduct) {
             needDeduct = true;
@@ -490,24 +491,23 @@ finally { submitBtn.disabled = false; submitBtn.textContent = '提交结单'; }
 };
 
 async function fetchDeposits() {
-    if(isLoading) return;
-    if(deposits.length===0) $('depositList').innerHTML = '<div class="loading-tip">加载中...</div>';
+    // 增加暴力容错：不判断 isLoading，直接拉取
     try {
-        const { data, error } = await supabase.from('deposits').select('*').order('created_at', { ascending: true });
+        const { data, error } = await supabase.from('deposits').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         deposits = data || [];
         renderDeposits();
     } catch (e) { 
-        if(deposits.length===0) $('depositList').innerHTML = '<div class="empty" style="color:#ef4444">❌ 预存表加载失败: '+e.message+'</div>'; 
+        console.error('拉取预存失败', e);
+        $('depositList').innerHTML = `<div class="empty" style="color:#ef4444">❌ 获取预存失败<br>原因: ${e.message || '未知网络错误'}</div>`; 
     }
 }
 
 function renderDeposits() {
     $('depositCount').textContent = deposits.length;
-    const sorted = [...deposits].reverse();
-    if(!sorted.length) { $('depositList').innerHTML = '<div class="empty">暂无记录</div>'; return; }
+    if(!deposits.length) { $('depositList').innerHTML = '<div class="empty">暂无记录</div>'; return; }
     let h = '';
-    sorted.forEach(d => {
+    deposits.forEach(d => {
         h += `<div class="rec deposit-rec" onclick="openDepositModal(${d.id})">
             <div class="rec-header">
                 <span class="rec-order" style="background:#fce7f3; color:#be185d;">👤 ${esc(d.card_holder || '无')}</span>
