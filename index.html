@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,12 +10,9 @@
 body{background:#f7f9fc;padding:16px 12px 40px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
 .container{max-width:500px;width:100%}
 h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weight:700}
-
-/* 顶部三个 Tab */
 .main-tabs{display:flex;background:#e2e8f0;padding:5px;border-radius:16px;margin-bottom:20px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);overflow-x:auto;}
 .main-tab{flex:1;padding:12px 5px;border:none;background:transparent;border-radius:12px;font-size:.95rem;font-weight:700;color:#64748b;cursor:pointer;transition:0.3s;white-space:nowrap;}
 .main-tab.active{background:#fff;color:#2563eb;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-
 .card{background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.04);padding:20px 18px;margin-bottom:20px;border:1px solid #eef2f6}
 .fr{margin-bottom:16px;display:flex;flex-direction:column}
 .fr label{font-size:.88rem;font-weight:500;color:#334155;margin-bottom:6px}
@@ -31,7 +28,6 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 .tab.active{background:#fff;color:#1e293b;box-shadow:0 2px 4px rgba(0,0,0,.06)}
 .exp-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .exp-btn{flex:1;background:#10b981;border:none;color:#fff;font-weight:600;font-size:.85rem;padding:11px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 10px -2px rgba(16,185,129,.3);white-space:nowrap}
-.exp-btn:active{background:#059669;transform:scale(.97)}
 .exp-prev{background:#f8fafc;border-radius:14px;padding:14px;border:1px solid #e2e8f0;font-size:.75rem;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;color:#334155;line-height:1.6;display:none;margin-bottom:10px}
 .exp-prev.show{display:block}
 .exp-acts{display:flex;gap:8px;margin-top:8px}
@@ -122,13 +118,13 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 .file-upload span {font-size: 1.5rem; margin-bottom: 5px;}
 .recharge-btn {background:#fce7f3; color:#be185d; border:none; padding:4px 10px; border-radius:30px; font-size:0.75rem; font-weight:600; cursor:pointer; margin-left:auto; transition:0.2s;}
 .recharge-btn:active {background:#fbcfe8;}
-
 .time-row{display:flex; gap:8px; margin-bottom:12px;}
 .time-row .fr{flex:1; margin-bottom:0;}
 .time-row input{padding:10px;}
-
 .to-jiedan-btn{background:#ffedd5; color:#c2410c; border:1px solid #fdba74; padding:8px 12px; border-radius:12px; font-size:.85rem; font-weight:700; cursor:pointer; width:100%; margin-top:12px; text-align:center; transition:0.2s;}
 .to-jiedan-btn:active {background:#fed7aa;}
+.inline-upload {display: flex; align-items: center; justify-content: center; background: #ffedd5; color: #c2410c; border: 1px dashed #fdba74; padding: 10px; border-radius: 10px; margin-top: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer;}
+.inline-upload input { display: none; }
 </style>
 </head>
 <body>
@@ -218,7 +214,7 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
         <div class="fr"><label>类型 <span>*</span></label><select id="cRtype"><option value="主单">📋 主单</option><option value="礼物单">🎁 礼物单</option><option value="好友位">🤝 好友位</option></select></div>
         <div class="fr"><label>金额 <span>*</span></label><input id="cAmount" type="number" placeholder="金额(元)" step="0.01" min="0"></div>
         <div class="fr"><label>单号 <span>*</span></label><input id="cOrderNo" placeholder="例如：11.1小九01"></div>
-        <button class="btn" id="submitCundanBtn" style="background:#f97316; box-shadow:0 8px 14px -4px rgba(249,115,22,.25);">建立存单 (立即预扣款)</button>
+        <button class="btn" id="submitCundanBtn" style="background:#f97316; box-shadow:0 8px 14px -4px rgba(249,115,22,.25);">建立存单</button>
     </div>
 
     <div class="sec-title"><h2>⏳ 待结存单 <span class="badge" id="cundanCount">0</span></h2><button class="clr-btn" id="clearAllCundan">🗑️ 全清</button></div>
@@ -265,34 +261,9 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 <button class="modal-close" id="cmClose">✖</button>
 </div>
 <div class="modal-body" id="cmBody"></div>
-<div class="modal-footer" style="flex-direction:column; gap:10px;">
-    <button class="to-jiedan-btn" id="cmToJiedanBtn" style="margin-top:0; padding:12px;">📸 上传截图并转为结单</button>
-    <div style="display:flex; gap:10px; width:100%;">
-        <button class="btn-danger" id="cmDelete">🗑️ 删除存单</button>
-        <button class="btn-cancel" id="cmCancel">关闭</button>
-    </div>
-</div>
-</div>
-</div>
-
-<!-- 转结单(上传图片)弹窗 -->
-<div class="modal" id="uploadJiedanModal">
-<div class="modal-content">
-<div class="modal-header">
-<div class="modal-title" style="color:#f97316">上传截图结单</div>
-<button class="modal-close" id="umClose">✖</button>
-</div>
-<div class="modal-body">
-    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">此单已预扣款，请上传转账/聊天截图以完成结单。</p>
-    <label class="file-upload" id="uFileLabel">
-        <input type="file" id="uScreenshot" accept="image/*">
-        <span>📸</span>
-        <div id="uFileName" style="font-size:0.85rem;font-weight:600">点击选择图片</div>
-    </label>
-</div>
-<div class="modal-footer">
-<button class="btn" id="confirmUploadBtn" style="background:#f97316; flex:1;">确认上传并结单</button>
-<button class="btn-cancel" id="cancelUploadBtn">取消</button>
+<div class="modal-footer" style="flex-direction:column; gap:12px;">
+    <button class="btn-danger" id="cmDelete" style="width:100%;">🗑️ 删除存单</button>
+    <button class="btn-cancel" id="cmCancel" style="width:100%;">关闭</button>
 </div>
 </div>
 </div>
@@ -394,14 +365,9 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN_PASSWORD = '123456'; 
 
 const $=id=>document.getElementById(id);
-// 结单
 const bossIn=$('boss'),directIn=$('direct'),playerIn=$('player'),typeIn=$('rtype'),amountIn=$('amount'),orderIn=$('orderNo'),orderWarn=$('orderWarn'),toastEl=$('toast'),submitBtn=$('submitBtn');
 const fileInput=$('screenshot'), fileNameDisplay=$('fileName'), fileLabel=$('fileLabel');
-// 存单
 const cBossIn=$('cBoss'),cDirectIn=$('cDirect'),cPlayerIn=$('cPlayer'),cTypeIn=$('cRtype'),cAmountIn=$('cAmount'),cOrderIn=$('cOrderNo'),submitCundanBtn=$('submitCundanBtn');
-// 转结单
-const uFileInput=$('uScreenshot'), uFileNameDisplay=$('uFileName'), uFileLabel=$('uFileLabel'), confirmUploadBtn=$('confirmUploadBtn');
-// 预存
 const dHolderIn=$('dHolder'), dDirectIn=$('dDirect'), dAmountIn=$('dAmount'), dBonusIn=$('dBonus'), dBalanceIn=$('dBalance'), submitDepositBtn=$('submitDepositBtn');
 
 let allReports=[], records=[], cundans=[], deposits=[], curFilter='all', curExport='', isLoading=false, selectedRecord=null, selectedCundan=null, selectedDeposit=null, deleteMode='single', deleteTargetType='report';
@@ -440,21 +406,6 @@ fileInput.addEventListener('change', function() {
     }
 });
 
-uFileInput.addEventListener('change', function() {
-    if(this.files && this.files[0]) {
-        const file = this.files[0];
-        if(file.size > 5 * 1024 * 1024) {
-            showToast('❌ 图片太大', true); this.value = ''; uFileNameDisplay.textContent = '点击选择图片';
-            uFileLabel.style.borderColor = '#cbd5e1'; uFileLabel.style.background = '#f8fafc'; return;
-        }
-        uFileNameDisplay.textContent = '已选择: ' + file.name;
-        uFileLabel.style.borderColor = '#10b981'; uFileLabel.style.background = '#ecfdf5';
-    } else {
-        uFileNameDisplay.textContent = '点击选择图片';
-        uFileLabel.style.borderColor = '#cbd5e1'; uFileLabel.style.background = '#f8fafc';
-    }
-});
-
 async function fetchReports() {
     if(isLoading) return; isLoading = true;
     try {
@@ -462,7 +413,6 @@ async function fetchReports() {
         if (error) throw error;
         allReports = data || [];
         
-        // 区分存单和正式结单
         records = allReports.filter(r => r.image_url !== 'PENDING');
         cundans = allReports.filter(r => r.image_url === 'PENDING').reverse();
         
@@ -497,30 +447,73 @@ h+='<div class="rec '+cls+'" onclick="openModal('+r.id+')"><div class="rec-heade
 });
 $('recList').innerHTML=h}
 
-// ============= 存单渲染 =============
 function renderCundans() {
     $('cundanCount').textContent = cundans.length;
     if(!cundans.length) { $('cundanList').innerHTML = '<div class="empty">暂无存单</div>'; return; }
     let h = '';
     cundans.forEach(r => {
         const timeStr = r.report_time || '';
-        h += `<div class="rec pending-rec" onclick="openCundanModal(${r.id})">
+        h += `<div class="rec pending-rec">
             <div class="rec-header">
-                <span class="rec-order">${esc(r.order_no||'无单号')}</span>
+                <span class="rec-order" style="background:#ffedd5; color:#c2410c;">${esc(r.order_no||'无单号')}</span>
                 <span class="rec-badge bg-pending">⏳ 待结</span>
                 <span class="rec-time">📅 ${timeStr}</span>
             </div>
-            <div class="rec-detail">
+            <div class="rec-detail" onclick="openCundanModal(${r.id})">
                 <div class="f"><span class="fl">老板</span><span class="fv">${esc(r.boss||'—')}</span></div>
                 <div class="f"><span class="fl">陪玩</span><span class="fv">${esc(r.player||'—')}</span></div>
                 <div class="f"><span class="fl">💰 金额</span><span class="fv amt">${fmtM(parseFloat(r.amount)||0)}</span></div>
             </div>
+            <label class="inline-upload">
+                 <input type="file" accept="image/*" onchange="handleInlineUpload(event, ${r.id})">
+                 📸 上传截图，完成此单
+            </label>
         </div>`;
     });
     $('cundanList').innerHTML = h;
 }
 
-// 存单详情
+// 终极修复版
+window.handleInlineUpload = async function(event, id) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const cundan = cundans.find(c => c.id === id);
+    if(!cundan) return;
+
+    event.target.parentNode.innerHTML = '⏳ 正在上传并结单...';
+
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        
+        // 1. 传图
+        const { error: uploadError } = await supabase.storage.from('screenshots').upload(fileName, file);
+        if (uploadError) throw new Error('云端图片上传失败: ' + uploadError.message);
+        
+        // 2. 拿图链接
+        const { data: urlData } = supabase.storage.from('screenshots').getPublicUrl(fileName);
+        const t = fullTs();
+
+        // 3. 更新数据（替换状态和时间）
+        const { error: updateError } = await supabase.from('reports').update({
+            image_url: urlData.publicUrl,
+            report_time: t.full,    
+            record_date: t.date     
+        }).eq('id', id);
+
+        if (updateError) throw new Error('数据更新失败: ' + updateError.message);
+
+        showToast('✅ 转换成功！已计入今日流水');
+        
+        // 给数据库0.5秒的反应时间再刷新
+        setTimeout(async () => { await fetchReports(); }, 500);
+        
+    } catch (e) {
+        showToast(e.message, true);
+        setTimeout(async () => { await fetchReports(); }, 1500);
+    }
+};
+
 window.openCundanModal = function(id) {
     selectedCundan = cundans.find(r => r.id === id);
     if(!selectedCundan) return;
@@ -531,28 +524,16 @@ window.openCundanModal = function(id) {
     html += '<div class="row"><span class="r-label">老板</span><span class="r-val">'+ esc(r.boss||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(r.direct||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">陪玩</span><span class="r-val">'+ esc(r.player||'—') +'</span></div>';
-    html += '<div class="row"><span class="r-label">金额 (已预扣)</span><span class="r-val" style="color:#f97316;font-size:1.1rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">金额 (已预扣)</span><span class="r-val" style="color:#f97316;font-size:1.2rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">建单时间</span><span class="r-val">'+ (r.report_time||'') +'</span></div>';
-    
     document.getElementById('cmBody').innerHTML = html;
     document.getElementById('cundanModal').classList.add('show');
 }
 function closeCundanModal() { document.getElementById('cundanModal').classList.remove('show'); selectedCundan = null; }
 document.getElementById('cmClose').onclick = closeCundanModal;
 document.getElementById('cmCancel').onclick = closeCundanModal;
+document.getElementById('cmDelete').onclick = () => { if(!selectedCundan) return; deleteMode = 'single'; deleteTargetType = 'cundan'; document.getElementById('adminPwd').value = ''; document.getElementById('pwdModal').classList.add('show'); setTimeout(()=>document.getElementById('adminPwd').focus(), 100); };
 
-document.getElementById('cmToJiedanBtn').onclick = () => {
-    if(!selectedCundan) return;
-    closeCundanModal();
-    // 打开上传图片框
-    uFileInput.value = ''; uFileNameDisplay.textContent = '点击选择图片';
-    uFileLabel.style.borderColor = '#cbd5e1'; uFileLabel.style.background = '#f8fafc';
-    document.getElementById('uploadJiedanModal').classList.add('show');
-}
-document.getElementById('umClose').onclick = () => document.getElementById('uploadJiedanModal').classList.remove('show');
-document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadJiedanModal').classList.remove('show');
-
-// ============= 核心：建存单（预扣款） =============
 submitCundanBtn.onclick = async () => {
     const boss = cBossIn.value.trim(), direct = cDirectIn.value.trim(), player = cPlayerIn.value.trim(), rtype = cTypeIn.value;
     const amountRaw = cAmountIn.value.trim(), orderNo = cOrderIn.value.trim();
@@ -561,7 +542,6 @@ submitCundanBtn.onclick = async () => {
     if(isNaN(amt)||amt<0){ showToast('金额不对', true); return; }
     if(checkDup(orderNo)){ showToast('⚠️ 单号已存在', true); return; }
 
-    // 预扣款逻辑
     let needDeduct = false;
     let targetDeposit = null;
     let newBalance = 0;
@@ -583,7 +563,6 @@ submitCundanBtn.onclick = async () => {
     const t = fullTs();
     submitCundanBtn.disabled = true; submitCundanBtn.textContent = '建立中...';
     try {
-        // 存单以 image_url = 'PENDING' 作为标识存进数据库
         const { error: dbError } = await supabase.from('reports').insert([{
             boss: boss, direct: direct || '', player: player, rtype: rtype, amount: amt, order_no: orderNo, report_time: t.full, record_date: t.date, image_url: 'PENDING'
         }]);
@@ -602,44 +581,10 @@ submitCundanBtn.onclick = async () => {
     } catch (e) {
         showToast('建单失败: '+e.message, true);
     } finally {
-        submitCundanBtn.disabled = false; submitCundanBtn.textContent = '建立存单 (立即预扣款)';
+        submitCundanBtn.disabled = false; submitCundanBtn.textContent = '建立存单';
     }
 };
 
-// ============= 存单转结单（上传图片） =============
-confirmUploadBtn.onclick = async () => {
-    if(!selectedCundan) return;
-    if(!uFileInput.files || !uFileInput.files[0]) { showToast('❌ 必须上传截图', true); return; }
-
-    const file = uFileInput.files[0];
-    const btn = confirmUploadBtn;
-    btn.disabled = true; btn.textContent = '上传中...';
-
-    try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('screenshots').upload(fileName, file);
-        if (uploadError) throw new Error('图传失败: ' + uploadError.message);
-        const { data: urlData } = supabase.storage.from('screenshots').getPublicUrl(fileName);
-
-        // 更新这条记录，把 image_url 替换成真实图片链接，它就不再是 PENDING（存单）了
-        const { error: updateError } = await supabase.from('reports').update({
-            image_url: urlData.publicUrl
-        }).eq('id', selectedCundan.id);
-
-        if (updateError) throw updateError;
-
-        document.getElementById('uploadJiedanModal').classList.remove('show');
-        showToast('✅ 转结单成功');
-        await fetchReports(); // 刷新数据
-    } catch (e) {
-        showToast('结单失败: ' + e.message, true);
-    } finally {
-        btn.disabled = false; btn.textContent = '确认上传并结单';
-    }
-};
-
-// ============= 结单提交 =============
 submitBtn.onclick=async()=>{
 const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
 if(!boss){showToast('填老板',true);bossIn.focus();return}
@@ -650,7 +595,6 @@ if(!orderNo){showToast('填单号',true);orderIn.focus();return}
 if(checkDup(orderNo)){ if(!confirm('⚠️ 单号已存在，继续提交？')) {orderIn.focus();return} }
 if(!fileInput.files || !fileInput.files[0]) { showToast('❌ 必须传图', true); return; }
 
-// 直接结单扣款逻辑
 let needDeduct = false;
 let targetDeposit = null;
 let newBalance = 0;
@@ -702,7 +646,6 @@ try {
 finally { submitBtn.disabled = false; submitBtn.textContent = '提交结单'; }
 };
 
-// ============= 其他基础逻辑 =============
 async function fetchDeposits() {
     try {
         const { data, error } = await supabase.from('deposits').select('*').order('created_at', { ascending: false });
@@ -737,12 +680,10 @@ function renderDeposits() {
     $('depositList').innerHTML = h;
 }
 
-// 原有的渲染统计（陪玩、老板、直属）
-function renderPlayer(){if(!records.length){$('playerStats').innerHTML='<div class="empty">暂无数据</div>';return}const m=new Map();records.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">🎮 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});$('playerStats').innerHTML=h}
-function renderBoss(){const d=$('bossDate').value||todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);$('bossTotal').textContent=fmtM(total);if(!f.length){$('bossStats').innerHTML='<div class="empty">今日暂无</div>';return}const m=new Map();f.forEach(r=>{const k=(r.boss||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👤 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});$('bossStats').innerHTML=h}
-function renderDirect(){if(!records.length){$('directStats').innerHTML='<div class="empty">暂无数据</div>';return}const m=new Map();records.forEach(r=>{const k=(r.direct||'').trim()||'无直属';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card"><div class="sc-header"><span class="sc-name">👔 '+esc(it.name)+'</span><span class="sc-amt">'+fmtM(it.amount)+'</span></div><div class="sc-detail"><span class="tpill tp-gift">🎁 '+it.g+'</span><span class="tpill tp-other">📋 '+it.o+'</span><span class="tpill tp-friend">🤝 '+it.f+'</span><span class="sc-meta">共 '+it.total+' 单</span></div></div>'});$('directStats').innerHTML=h}
+function renderPlayer(){if(!records.length){$('playerStats').innerHTML='<div class="empty">暂无数据</div>';return}const m=new Map();records.forEach(r=>{const k=(r.player||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card" style="background:#fff;border-radius:16px;padding:16px;border:1px solid #eef2f6;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:.95rem;">🎮 '+esc(it.name)+'</span><span style="color:#059669;font-weight:800;font-size:1.1rem;">'+fmtM(it.amount)+'</span></div><div style="display:flex;gap:8px;margin-top:8px;font-size:.75rem;flex-wrap:wrap;"><span style="padding:4px 8px;border-radius:6px;background:#fef3c7;color:#b45309;font-weight:600;">🎁 '+it.g+'</span><span style="padding:4px 8px;border-radius:6px;background:#e0e7ff;color:#3730a3;font-weight:600;">📋 '+it.o+'</span><span style="padding:4px 8px;border-radius:6px;background:#ede9fe;color:#5b21b6;font-weight:600;">🤝 '+it.f+'</span><span style="margin-left:auto;color:#64748b;font-weight:600;font-size:.75rem;">共 '+it.total+' 单</span></div></div>'});$('playerStats').innerHTML=h}
+function renderBoss(){const d=$('bossDate').value||todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));const total=f.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);$('bossTotal').textContent=fmtM(total);if(!f.length){$('bossStats').innerHTML='<div class="empty">今日暂无</div>';return}const m=new Map();f.forEach(r=>{const k=(r.boss||'未知').trim()||'未知';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card" style="background:#fff;border-radius:16px;padding:16px;border:1px solid #eef2f6;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:.95rem;">👤 '+esc(it.name)+'</span><span style="color:#059669;font-weight:800;font-size:1.1rem;">'+fmtM(it.amount)+'</span></div><div style="display:flex;gap:8px;margin-top:8px;font-size:.75rem;flex-wrap:wrap;"><span style="padding:4px 8px;border-radius:6px;background:#fef3c7;color:#b45309;font-weight:600;">🎁 '+it.g+'</span><span style="padding:4px 8px;border-radius:6px;background:#e0e7ff;color:#3730a3;font-weight:600;">📋 '+it.o+'</span><span style="padding:4px 8px;border-radius:6px;background:#ede9fe;color:#5b21b6;font-weight:600;">🤝 '+it.f+'</span><span style="margin-left:auto;color:#64748b;font-weight:600;font-size:.75rem;">共 '+it.total+' 单</span></div></div>'});$('bossStats').innerHTML=h}
+function renderDirect(){if(!records.length){$('directStats').innerHTML='<div class="empty">暂无数据</div>';return}const m=new Map();records.forEach(r=>{const k=(r.direct||'').trim()||'无直属';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});const list=[...m.entries()].map(([n,rs])=>({name:n,...getCounts(rs)})).sort((a,b)=>b.amount-a.amount);let h='';list.forEach(it=>{h+='<div class="stat-card" style="background:#fff;border-radius:16px;padding:16px;border:1px solid #eef2f6;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:.95rem;">👔 '+esc(it.name)+'</span><span style="color:#059669;font-weight:800;font-size:1.1rem;">'+fmtM(it.amount)+'</span></div><div style="display:flex;gap:8px;margin-top:8px;font-size:.75rem;flex-wrap:wrap;"><span style="padding:4px 8px;border-radius:6px;background:#fef3c7;color:#b45309;font-weight:600;">🎁 '+it.g+'</span><span style="padding:4px 8px;border-radius:6px;background:#e0e7ff;color:#3730a3;font-weight:600;">📋 '+it.o+'</span><span style="padding:4px 8px;border-radius:6px;background:#ede9fe;color:#5b21b6;font-weight:600;">🤝 '+it.f+'</span><span style="margin-left:auto;color:#64748b;font-weight:600;font-size:.75rem;">共 '+it.total+' 单</span></div></div>'});$('directStats').innerHTML=h}
 
-// 充值弹窗
 window.openRecharge = function(id) { selectedDeposit = deposits.find(d => d.id === id); if(!selectedDeposit) return; document.getElementById('rmTitle').textContent = '充值 - ' + selectedDeposit.card_holder; document.getElementById('rechargeAmount').value = ''; document.getElementById('rechargeBonus').value = selectedDeposit.bonus_amount || ''; document.getElementById('rechargeModal').classList.add('show'); }
 function closeRechargeModal() { document.getElementById('rechargeModal').classList.remove('show'); }
 document.getElementById('rmClose').onclick = closeRechargeModal; document.getElementById('cancelRechargeBtn').onclick = closeRechargeModal;
@@ -767,7 +708,6 @@ document.getElementById('confirmRechargeBtn').onclick = async () => {
     } catch(e) { showToast('充值失败: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = '确认充值'; }
 };
 
-// 预存详情
 window.openDepositModal = function(id) {
     selectedDeposit = deposits.find(d => d.id === id); if(!selectedDeposit) return;
     const d = selectedDeposit; document.getElementById('dmTitle').textContent = '预存详情';
@@ -776,7 +716,7 @@ window.openDepositModal = function(id) {
     html += '<div class="row"><span class="r-label">预存总金额</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">开卡奖励</span><span class="r-val" style="color:#059669">'+ esc(d.bonus_amount || '无') +'</span></div>';
     html += '<div class="row"><span class="r-label">当前卡内余额</span><span class="r-val" style="color:#be185d;font-size:1.1rem">'+ fmtM(parseFloat(d.balance)||0) +'</span></div>';
-    if(d.history) { html += '<div style="margin-top:15px; padding:10px; background:#f8fafc; border-radius:8px; font-size:0.8rem; color:#475569; white-space:pre-wrap; max-height:120px; overflow-y:auto;"><b>操作记录：</b>\n'+ esc(d.history) +'</div>'; }
+    if(d.history) { html += '<div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:12px; font-size:0.8rem; color:#64748b; white-space:pre-wrap; max-height:120px; overflow-y:auto; border:1px solid #e2e8f0;"><b>操作记录：</b>\n'+ esc(d.history) +'</div>'; }
     document.getElementById('dmBody').innerHTML = html; document.getElementById('depositModal').classList.add('show');
 }
 function closeDepositModal() { document.getElementById('depositModal').classList.remove('show'); selectedDeposit = null; }
@@ -797,7 +737,6 @@ submitDepositBtn.onclick = async () => {
     } catch (e) { showToast(e.message, true); } finally { submitDepositBtn.disabled = false; submitDepositBtn.textContent = '提交预存'; }
 };
 
-// 验证密码并删除
 document.getElementById('cancelPwdBtn').onclick = () => { document.getElementById('pwdModal').classList.remove('show'); };
 document.getElementById('confirmDeleteBtn').onclick = async () => {
     const pwd = document.getElementById('adminPwd').value;
@@ -836,7 +775,6 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
 };
 document.getElementById('adminPwd').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('confirmDeleteBtn').click(); });
 
-// 导出相关逻辑 (简略)
 $('expAll').onclick=()=>{if(!records.length){showToast('暂无记录',true);return}showExport(buildExport(records,'📋 全部记录'));showToast('已生成')};
 $('expToday').onclick=()=>{ if(!records.length){showToast('暂无记录',true);return} const d = todayStr(); document.getElementById('expStartDate').value = d; document.getElementById('expEndDate').value = d; document.getElementById('exportTimeModal').classList.add('show'); };
 document.getElementById('etmClose').onclick = () => document.getElementById('exportTimeModal').classList.remove('show');
@@ -873,7 +811,6 @@ txt+='\n'});
 return txt.trim()}
 function showExport(text){curExport=text;$('expPrev').textContent=text;$('expPrev').classList.add('show');$('expActs').style.display='flex'}
 
-// 结单列表相关的Tabs
 $('viewTabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;
 const v=t.dataset.view;
 document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
@@ -889,7 +826,6 @@ $('bossDate').value=todayStr(); $('bossDate').onchange=renderBoss;
 $('todayBtn').onclick=()=>{$('bossDate').value=todayStr();renderBoss()};
 orderIn.addEventListener('input',validateOrder); orderIn.addEventListener('blur',validateOrder);
 
-// 结单详情弹窗
 window.openModal = function(id) {
     selectedRecord = records.find(r => r.id === id); if(!selectedRecord) return;
     const r = selectedRecord; document.getElementById('mTitle').textContent = '单号：' + (r.order_no || '无');
@@ -898,9 +834,9 @@ window.openModal = function(id) {
     html += '<div class="row"><span class="r-label">老板</span><span class="r-val">'+ esc(r.boss||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(r.direct||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">陪玩</span><span class="r-val">'+ esc(r.player||'—') +'</span></div>';
-    html += '<div class="row"><span class="r-label">金额</span><span class="r-val" style="color:#059669;font-size:1.1rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">金额</span><span class="r-val" style="color:#059669;font-size:1.2rem">'+ fmtM(parseFloat(r.amount)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">时间</span><span class="r-val">'+ (r.report_time||'') +'</span></div>';
-    html += '<div style="margin-top:15px; text-align:center;">';
+    html += '<div style="margin-top:16px; text-align:center;">';
     if(r.image_url && r.image_url !== 'PENDING') { html += '<a href="'+r.image_url+'" target="_blank"><img src="'+r.image_url+'" style="width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:zoom-in;"></a>'; } else { html += '<div style="padding:20px;background:#f1f5f9;color:#94a3b8;border-radius:12px;font-size:.8rem;">无图片</div>'; }
     html += '</div>';
     document.getElementById('mBody').innerHTML = html; document.getElementById('detailModal').classList.add('show');
@@ -913,7 +849,6 @@ $('clearAll').onclick = () => { if(!records.length){showToast('暂无记录',fal
 $('cmDelete').onclick = () => { if(!selectedCundan) return; deleteMode = 'single'; deleteTargetType = 'cundan'; document.getElementById('adminPwd').value = ''; document.getElementById('pwdModal').classList.add('show'); setTimeout(()=>document.getElementById('adminPwd').focus(), 100); };
 $('clearAllCundan').onclick = () => { if(!cundans.length){showToast('暂无记录',false);return} deleteMode = 'all'; deleteTargetType = 'cundan'; document.getElementById('adminPwd').value = ''; document.getElementById('pwdModal').classList.add('show'); setTimeout(()=>document.getElementById('adminPwd').focus(), 100); };
 
-// 启动
 fetchReports(); fetchDeposits();
 })();
 </script>
