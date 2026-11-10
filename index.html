@@ -51,7 +51,7 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 .ftab .cb{background:rgba(0,0,0,.1);padding:2px 7px;border-radius:30px;font-size:.7rem}
 .ftab.active .cb{background:rgba(255,255,255,.25)}
 .rec-list{display:flex;flex-direction:column;gap:10px}
-.rec{background:#fff;border-radius:16px;padding:15px;border:1px solid #eef2f6;border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,.02);cursor:pointer;transition:0.2s;position:relative}
+.rec{background:#fff;border-radius:16px;padding:15px;border:1px solid #eef2f6;border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,.02);transition:0.2s;position:relative}
 .rec:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.05)}
 .rec.type-gift{border-left-color:#f59e0b}
 .rec.type-friend{border-left-color:#8b5cf6}
@@ -64,7 +64,7 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 .bg-friend{background:#ede9fe;color:#6d28d9}
 .bg-deposit{background:#fce7f3;color:#be185d}
 .rec-time{font-size:.66rem;color:#94a3b8;background:#f1f5f9;padding:4px 9px;border-radius:30px}
-.rec-detail{display:flex;flex-wrap:wrap;gap:7px 13px;font-size:.88rem;color:#1e293b}
+.rec-detail{display:flex;flex-wrap:wrap;gap:7px 13px;font-size:.88rem;color:#1e293b;cursor:pointer;}
 .rec-detail .f{display:flex;align-items:baseline;gap:4px}
 .rec-detail .fl{color:#64748b;font-size:.76rem;font-weight:500}
 .rec-detail .fv{font-weight:500;word-break:break-word}
@@ -117,6 +117,13 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 .file-upload:hover {border-color: #3b82f6; background: #eff6ff; color: #2563eb;}
 .file-upload input[type="file"] {display: none;}
 .file-upload span {font-size: 1.5rem; margin-bottom: 5px;}
+.recharge-btn {background:#fce7f3; color:#be185d; border:none; padding:4px 10px; border-radius:30px; font-size:0.75rem; font-weight:600; cursor:pointer; margin-left:auto; transition:0.2s;}
+.recharge-btn:active {background:#fbcfe8;}
+
+/* 时间选择器样式 */
+.time-row{display:flex; gap:8px; margin-bottom:12px;}
+.time-row .fr{flex:1; margin-bottom:0;}
+.time-row input{padding:10px;}
 </style>
 </head>
 <body>
@@ -159,7 +166,7 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 
     <div class="exp-row">
     <button class="exp-btn" id="expAll">📄 导出全部</button>
-    <button class="exp-btn" id="expToday" style="background:#6366f1">📅 导出今日</button>
+    <button class="exp-btn" id="expToday" style="background:#6366f1">⏱️ 按时段导出</button>
     <button class="clr-btn" id="clearAll">🗑️ 全清</button>
     </div>
     <div class="exp-prev" id="expPrev"></div>
@@ -239,6 +246,61 @@ h1{font-size:1.5rem;color:#1e293b;margin-bottom:16px;text-align:center;font-weig
 <div class="modal-footer">
 <button class="btn-danger" id="dmDelete">🗑️ 删除</button>
 <button class="btn-cancel" id="dmCancel">关闭</button>
+</div>
+</div>
+</div>
+
+<!-- 充值/更新奖励 弹窗 -->
+<div class="modal" id="rechargeModal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title" id="rmTitle">💳 充值 / 修改奖励</div>
+<button class="modal-close" id="rmClose">✖</button>
+</div>
+<div class="modal-body">
+    <div class="fr" style="margin-bottom:12px;">
+        <label>本次充值金额 <span style="color:#ef4444">*</span></label>
+        <input type="number" id="rechargeAmount" placeholder="如: 100" step="0.01" min="0">
+    </div>
+    <div class="fr">
+        <label>更新开卡奖励 (选填)</label>
+        <input type="text" id="rechargeBonus" placeholder="如: 送两局 / 无">
+        <div class="helper" style="color:#be185d; margin-top:4px;">注意：修改后会覆盖原来的奖励文字</div>
+    </div>
+</div>
+<div class="modal-footer">
+<button class="btn-primary" id="confirmRechargeBtn" style="flex:1; background:#ec4899; border-radius:12px; color:white; font-weight:600;">确认充值</button>
+<button class="btn-cancel" id="cancelRechargeBtn">取消</button>
+</div>
+</div>
+</div>
+
+<!-- 时段导出弹窗 -->
+<div class="modal" id="exportTimeModal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title">⏱️ 按时段导出记录</div>
+<button class="modal-close" id="etmClose">✖</button>
+</div>
+<div class="modal-body">
+    <div class="fr" style="margin-bottom:10px;">
+        <label>开始时间</label>
+        <div class="time-row">
+            <input type="date" id="expStartDate" style="flex:1.5;">
+            <input type="time" id="expStartTime" value="00:00" style="flex:1;">
+        </div>
+    </div>
+    <div class="fr">
+        <label>结束时间</label>
+        <div class="time-row">
+            <input type="date" id="expEndDate" style="flex:1.5;">
+            <input type="time" id="expEndTime" value="23:59" style="flex:1;">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+<button class="btn-primary" id="confirmExportTimeBtn" style="flex:1; background:#6366f1; border-radius:12px; color:white; font-weight:600;">生成导出文本</button>
+<button class="btn-cancel" id="cancelExportTimeBtn">取消</button>
 </div>
 </div>
 </div>
@@ -411,10 +473,54 @@ $('clearAll').onclick = () => {
     setTimeout(()=>document.getElementById('adminPwd').focus(), 100);
 };
 
-$('expAll').onclick=()=>{if(!records.length){showToast('暂无记录',true);return}showExport(buildExport(records,'📋 全部记录'));showToast('已生成')};
-$('expToday').onclick=()=>{const d=todayStr();const f=records.filter(r=>r.record_date===d || (r.report_time && r.report_time.startsWith(d)));if(!f.length){showToast('今日无记录',true);return}showExport(buildExport(f,'📅 '+d+' 记录'));showToast('已生成')};
+// ================= 导出相关逻辑 =================
+$('expAll').onclick=()=>{
+    if(!records.length){showToast('暂无记录',true);return}
+    showExport(buildExport(records,'📋 全部记录'));
+    showToast('已生成')
+};
+
+$('expToday').onclick=()=>{
+    if(!records.length){showToast('暂无记录',true);return}
+    const d = todayStr();
+    document.getElementById('expStartDate').value = d;
+    document.getElementById('expEndDate').value = d;
+    document.getElementById('exportTimeModal').classList.add('show');
+};
+
+function closeExportTimeModal() { document.getElementById('exportTimeModal').classList.remove('show'); }
+document.getElementById('etmClose').onclick = closeExportTimeModal;
+document.getElementById('cancelExportTimeBtn').onclick = closeExportTimeModal;
+
+document.getElementById('confirmExportTimeBtn').onclick = () => {
+    const sd = document.getElementById('expStartDate').value;
+    const st = document.getElementById('expStartTime').value || '00:00';
+    const ed = document.getElementById('expEndDate').value;
+    const et = document.getElementById('expEndTime').value || '23:59';
+
+    if(!sd || !ed) { showToast('请选择完整的日期', true); return; }
+    
+    const startStr = sd + ' ' + st + ':00';
+    const endStr = ed + ' ' + et + ':59';
+
+    // 筛选时间范围内的记录
+    const filtered = records.filter(r => {
+        const rTime = r.report_time;
+        if(!rTime) return false;
+        return rTime >= startStr && rTime <= endStr;
+    });
+
+    if(!filtered.length) { showToast('该时段内没有记录', true); return; }
+
+    const title = `⏱️ 时段导出：${sd} ${st} 至 ${ed} ${et}`;
+    showExport(buildExport(filtered, title));
+    closeExportTimeModal();
+    showToast('✅ 时段导出已生成');
+};
+
 $('copyExp').onclick=async()=>{try{await navigator.clipboard.writeText(curExport);showToast('✅ 已复制')}catch(e){showToast('复制失败',true)}};
 $('closeExp').onclick=()=>{$('expPrev').classList.remove('show');$('expActs').style.display='none'};
+// ====================================================
 
 submitBtn.onclick=async()=>{
 const boss=bossIn.value.trim(),direct=directIn.value.trim(),player=playerIn.value.trim(),rtype=typeIn.value,amountRaw=amountIn.value.trim(),orderNo=orderIn.value.trim();
@@ -426,18 +532,15 @@ if(!orderNo){showToast('填单号',true);orderIn.focus();return}
 if(checkDup(orderNo)){ if(!confirm('⚠️ 单号已存在，继续提交？')) {orderIn.focus();return} }
 if(!fileInput.files || !fileInput.files[0]) { showToast('❌ 必须传图', true); return; }
 
-// ================= 联动扣款弹窗逻辑开始 =================
+// 联动扣款弹窗逻辑
 let needDeduct = false;
 let targetDeposit = null;
 let newBalance = 0;
-
-// 在预存库里找有没有同名持卡人（精准匹配去空格）
 const matchedDeposits = deposits.filter(d => (d.card_holder||'').trim() === boss);
 if (matchedDeposits.length > 0) {
     targetDeposit = matchedDeposits[matchedDeposits.length - 1];
     const currentBalance = parseFloat(targetDeposit.balance) || 0;
     if (currentBalance >= amt) {
-        // 使用浏览器自带的同步弹窗，确保100%弹出来
         const confirmDeduct = confirm(`💳 发现【${boss}】的预存卡，当前卡内余额：${fmtM(currentBalance)} 元。\n\n是否从卡内扣除本单金额 ${fmtM(amt)} 元？\n\n(点“确定”扣款，点“取消”视为现金/新转账)`);
         if (confirmDeduct) {
             needDeduct = true;
@@ -447,7 +550,6 @@ if (matchedDeposits.length > 0) {
         alert(`⚠️ 发现【${boss}】的预存卡，但余额不足！\n当前余额：${fmtM(currentBalance)} 元，本单需要：${fmtM(amt)} 元。\n\n将按普通结单记录，不扣减余额。`);
     }
 }
-// ================= 联动扣款逻辑结束 =================
 
 const file = fileInput.files[0];
 const t=fullTs();
@@ -459,13 +561,11 @@ try {
     if (uploadError) throw new Error('图传失败: ' + uploadError.message);
     const { data: urlData } = supabase.storage.from('screenshots').getPublicUrl(fileName);
     
-    // 1. 提交结单记录
     const { error: dbError } = await supabase.from('reports').insert([{
         boss: boss, direct: direct || '', player: player, rtype: rtype, amount: amt, order_no: orderNo, report_time: t.full, record_date: t.date, image_url: urlData.publicUrl
     }]);
     if (dbError) throw dbError;
 
-    // 2. 静默扣除预存卡余额（只动 balance 字段，绝不动 deposit_amount）
     if (needDeduct && targetDeposit) {
         const historyStr = `${t.full.split(' ')[0]} 结单扣款 -${fmtM(amt)} (单号:${orderNo})\n` + (targetDeposit.history || '');
         const { error: depError } = await supabase.from('deposits').update({
@@ -491,7 +591,6 @@ finally { submitBtn.disabled = false; submitBtn.textContent = '提交结单'; }
 };
 
 async function fetchDeposits() {
-    // 增加暴力容错：不判断 isLoading，直接拉取
     try {
         const { data, error } = await supabase.from('deposits').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -508,13 +607,14 @@ function renderDeposits() {
     if(!deposits.length) { $('depositList').innerHTML = '<div class="empty">暂无记录</div>'; return; }
     let h = '';
     deposits.forEach(d => {
-        h += `<div class="rec deposit-rec" onclick="openDepositModal(${d.id})">
+        h += `<div class="rec deposit-rec">
             <div class="rec-header">
                 <span class="rec-order" style="background:#fce7f3; color:#be185d;">👤 ${esc(d.card_holder || '无')}</span>
                 <span class="rec-badge bg-deposit">💳 预存</span>
                 <span class="rec-time">📅 ${d.report_time || ''}</span>
+                <button class="recharge-btn" onclick="openRecharge(${d.id})">➕ 充值</button>
             </div>
-            <div class="rec-detail">
+            <div class="rec-detail" onclick="openDepositModal(${d.id})">
                 <div class="f"><span class="fl">直属</span><span class="fv">${esc(d.direct || '—')}</span></div>
                 <div class="f"><span class="fl">预存</span><span class="fv">${fmtM(parseFloat(d.deposit_amount) || 0)}</span></div>
                 <div class="f"><span class="fl">余额</span><span class="fv amt" style="color:#be185d;">${fmtM(parseFloat(d.balance) || 0)}</span></div>
@@ -524,6 +624,63 @@ function renderDeposits() {
     $('depositList').innerHTML = h;
 }
 
+// 充值弹窗逻辑
+window.openRecharge = function(id) {
+    selectedDeposit = deposits.find(d => d.id === id);
+    if(!selectedDeposit) return;
+    
+    document.getElementById('rmTitle').textContent = '充值 - ' + selectedDeposit.card_holder;
+    document.getElementById('rechargeAmount').value = '';
+    document.getElementById('rechargeBonus').value = selectedDeposit.bonus_amount || '';
+    
+    document.getElementById('rechargeModal').classList.add('show');
+}
+
+function closeRechargeModal() { document.getElementById('rechargeModal').classList.remove('show'); }
+document.getElementById('rmClose').onclick = closeRechargeModal;
+document.getElementById('cancelRechargeBtn').onclick = closeRechargeModal;
+
+document.getElementById('confirmRechargeBtn').onclick = async () => {
+    if(!selectedDeposit) return;
+    
+    const addAmountRaw = document.getElementById('rechargeAmount').value.trim();
+    const newBonus = document.getElementById('rechargeBonus').value.trim() || '无';
+    
+    if(!addAmountRaw) { showToast('请输入充值金额', true); return; }
+    const addAmount = parseFloat(addAmountRaw);
+    if(isNaN(addAmount) || addAmount <= 0) { showToast('充值金额必须大于0', true); return; }
+    
+    const oldDepositAmount = parseFloat(selectedDeposit.deposit_amount) || 0;
+    const oldBalance = parseFloat(selectedDeposit.balance) || 0;
+    
+    const newDepositAmount = oldDepositAmount + addAmount;
+    const newBalance = oldBalance + addAmount;
+    
+    const t = fullTs();
+    const btn = document.getElementById('confirmRechargeBtn');
+    btn.disabled = true; btn.textContent = '处理中...';
+    
+    try {
+        const historyStr = `${t.full.split(' ')[0]} 续费充值 +${fmtM(addAmount)}\n` + (selectedDeposit.history || '');
+        const { error } = await supabase.from('deposits').update({
+            deposit_amount: newDepositAmount,
+            balance: newBalance,
+            bonus_amount: newBonus,
+            history: historyStr
+        }).eq('id', selectedDeposit.id);
+        
+        if (error) throw error;
+        
+        closeRechargeModal();
+        showToast('✅ 充值成功');
+        await fetchDeposits();
+    } catch(e) {
+        showToast('充值失败: ' + e.message, true);
+    } finally {
+        btn.disabled = false; btn.textContent = '确认充值';
+    }
+};
+
 window.openDepositModal = function(id) {
     selectedDeposit = deposits.find(d => d.id === id);
     if(!selectedDeposit) return;
@@ -532,13 +689,13 @@ window.openDepositModal = function(id) {
     let html = '';
     html += '<div class="row"><span class="r-label">持卡人</span><span class="r-val">'+ esc(d.card_holder||'—') +'</span></div>';
     html += '<div class="row"><span class="r-label">直属</span><span class="r-val">'+ esc(d.direct||'—') +'</span></div>';
-    html += '<div class="row"><span class="r-label">预存金额 (固定)</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
+    html += '<div class="row"><span class="r-label">预存总金额</span><span class="r-val" style="font-size:1.1rem">'+ fmtM(parseFloat(d.deposit_amount)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">开卡奖励</span><span class="r-val" style="color:#059669">'+ esc(d.bonus_amount || '无') +'</span></div>';
     html += '<div class="row"><span class="r-label">当前卡内余额</span><span class="r-val" style="color:#be185d;font-size:1.1rem">'+ fmtM(parseFloat(d.balance)||0) +'</span></div>';
     html += '<div class="row"><span class="r-label">操作时间</span><span class="r-val">'+ (d.report_time||'') +'</span></div>';
     
     if(d.history) {
-        html += '<div style="margin-top:15px; padding:10px; background:#f8fafc; border-radius:8px; font-size:0.8rem; color:#475569; white-space:pre-wrap; max-height:120px; overflow-y:auto; border:1px solid #e2e8f0;"><b>扣款记录：</b>\n'+ esc(d.history) +'</div>';
+        html += '<div style="margin-top:15px; padding:10px; background:#f8fafc; border-radius:8px; font-size:0.8rem; color:#475569; white-space:pre-wrap; max-height:120px; overflow-y:auto; border:1px solid #e2e8f0;"><b>操作记录：</b>\n'+ esc(d.history) +'</div>';
     }
 
     document.getElementById('dmBody').innerHTML = html;
